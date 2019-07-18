@@ -1,0 +1,7 @@
+{
+    "arduino.path": "D:/Program Files (x86)/Arduino",
+    "board": "arduino:avr:uno",
+    "output": "../build",
+    "port": "COM3",
+    "sketch": "main.ino"
+}
