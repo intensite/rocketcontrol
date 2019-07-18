@@ -13,7 +13,7 @@ volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin h
 void dmpDataReady() {
     mpuInterrupt = true;
 }
-
+ 
 
 void setup() {
     // initialize serial communication
