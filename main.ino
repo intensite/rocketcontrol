@@ -1,5 +1,8 @@
 
+#include "src/config.h"
 #include "src/gyro/gyro.h"
+#include "src/servo/fins_servo.h"
+#include "src/flight_correct/correct.h"
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
@@ -23,7 +26,7 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
 
     setupGyro();
-
+    setupServo();
     
 }
 
@@ -32,6 +35,8 @@ void loop() {
         mpuInterrupt = false;
         ProcessGyroData(ypr);
     }
+
+    processTrajectory(ypr);
     Serial.println(ypr[1] * 180/M_PI);
 
 }

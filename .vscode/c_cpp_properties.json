@@ -8,6 +8,7 @@
                 "C:\\Users\\stephen\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",
                 "C:\\Users\\stephen\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/src/**",
                 "D:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
                 "D:\\Program Files (x86)\\Arduino\\tools\\**"
             ],

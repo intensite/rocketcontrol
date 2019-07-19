@@ -1,8 +1,8 @@
 
 #include "Arduino.h"
 #include "Servo.h"
+#include "../config.h"
 
-#define SERVO_PIN 6 // (PWM Pin to control the servo)
 
 void moveServo(float _ypr[]);
 void setupServo();
