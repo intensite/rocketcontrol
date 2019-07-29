@@ -1,10 +1,14 @@
 
 #include "src/config.h"
 #include "src/gyro/gyro.h"
+#include "src/altimeter/alti.h"
 #include "src/servo/fins_servo.h"
 #include "src/flight_correct/correct.h"
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+float alti;
+const long interval = 100;
+unsigned long previousMillis = 0;
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -26,17 +30,32 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
 
     setupGyro();
+    setupAlti();
     setupServo();
-    
 }
 
 void loop() {
+   unsigned long currentMillis = millis();
+    
     if(mpuInterrupt) {
         mpuInterrupt = false;
         ProcessGyroData(ypr);
     }
+   
+     if (currentMillis - previousMillis >= interval) {
 
-    processTrajectory(ypr);
-    Serial.println(ypr[1] * 180/M_PI);
+        alti = ProcessAltiData();
+        processTrajectory(ypr);
 
-}
+        // Debug stuff
+        Serial.print(" Gyro:");
+        Serial.print(ypr[1] * 180/M_PI);
+        Serial.print(" : ");
+        Serial.println(ypr[2] * 180/M_PI);
+        
+        Serial.print("Altitude:");
+        Serial.println(alti);
+        previousMillis = previousMillis+interval; 
+    }
+   }
+

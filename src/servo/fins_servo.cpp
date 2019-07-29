@@ -19,12 +19,13 @@ void moveServo(float _ypr[]) {
 
     pos_1 =(uint8_t) 90-(_ypr[1] * 180/M_PI);
     pos_1 = ((pos_1 < 5) ? 5 : pos_1);
-    pos_1 = ((pos_1 >= 180) ? 180 : pos_1);
+    pos_1 = ((pos_1 >= 175) ? 175 : pos_1);
 
     pos_2 =(uint8_t) 90-(_ypr[2] * 180/M_PI);
     pos_2 = ((pos_2 < 5) ? 5 : pos_2);
-    pos_2 = ((pos_2 >= 180) ? 180 : pos_2);
+    pos_2 = ((pos_2 >= 175) ? 175 : pos_2);
 
+    Serial.print(" servo:");
     Serial.print(pos_1);
     servo_1.write(pos_1);  
     servo_2.write(pos_2);  
