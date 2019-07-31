@@ -13,8 +13,8 @@ unsigned long previousMillis = 0;
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
-#define MPU_INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
-#define ALTI_INTERRUPT_PIN 3  // use pin 3 on Arduino Uno & most boards
+#define MPU_INTERRUPT_PIN 3  // use pin 2 on Arduino Uno & most boards
+#define ALTI_INTERRUPT_PIN 2  // use pin 3 on Arduino Uno & most boards
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -24,7 +24,7 @@ void dmpDataReady() {
 
 void setup() {
     // initialize serial communication
-    Serial.begin(115200);
+    Serial.begin(38400);  // Reduced the speed as it was crashing the arduino at 115200
     pinMode(MPU_INTERRUPT_PIN, INPUT);
 
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
