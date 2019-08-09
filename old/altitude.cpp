@@ -1,31 +1,31 @@
-
 /* ====================================================================
  * 2019 Stephen Remillard / Francois Paquette
  * based on the excelent I2Cdev device library code from Jeff Rowberg
  * available at https://github.com/jrowberg/i2cdevlib
  ====================================================================== */
+/* ==========================================================================
+ * I2Cdev device library code is placed under the MIT license
+ * Copyright (c) 2012 Jeff Rowberg 
+ * MIT license detaild snipped *
+ =============================================================================*/
 
-
-#include "../config.h"
 #include "altitude.h"
+#include "../config.h"
+// #include "../altitude/altitude.h"
+
 #include "I2Cdev.h"
-#include "../parachute/parachute.h"
+#include "SparkFunMPL3115A2.h"
 
+MPL3115A2 myPressure;
 
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    #include "Wire.h"
-#endif
-
+static float altitude_max;
+static float previous_altitude;
+float altitude_offset=0;
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
-
-Altitude::Altitude() {};
-
-void Altitude::setupAlti() {
+void setupAlti() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
@@ -34,7 +34,7 @@ void Altitude::setupAlti() {
         Fastwire::setup(400, true);
     #endif
 
-    altitude_max = 0; previous_altitude = 0; is_apogee = false;
+    altitude_max = 0; previous_altitude = 0;
 
     // initialize device
     myPressure.begin(); // Get sensor online
@@ -50,28 +50,27 @@ void Altitude::setupAlti() {
 
 
 
-float Altitude::processAltiData() {
+float ProcessAltiData() {
 
-    // Get the current altitude using the altitude_offset
-    current_altitude = myPressure.readAltitude() - altitude_offset;
+    float alti = myPressure.readAltitude() - altitude_offset;
 
-    if (current_altitude < 0) {
-        current_altitude = 0;
+    if (alti < 0) {
+        alti = 0;
     }
 
-    if (current_altitude > altitude_max){
-        altitude_max = current_altitude;
+    if (alti > altitude_max){
+        altitude_max = alti;
     }
 
     if(altitude_max > APOGEE_DIFF_METERS) {
-        if((current_altitude - APOGEE_DIFF_METERS) < altitude_max) {
+        if((alti - APOGEE_DIFF_METERS) < altitude_max) {
             Serial.print("Apogee passed. Max altitude: ");
             Serial.println(altitude_max);
             deployParachute();
         }
     }
 
-    previous_altitude = current_altitude;
-    return current_altitude;
+    previous_altitude = alti;
+    return alti;
 
 }

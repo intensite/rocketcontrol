@@ -9,10 +9,10 @@
  * MIT license detaild snipped *
  =============================================================================*/
 
-#include "gyro.h"
+#include "Cgyro.h"
 
 #include "I2Cdev.h"
-#include "MPU6050_6Axis_MotionApps20.h"
+// #include "MPU6050_6Axis_MotionApps20.h"
 MPU6050 mpu;
 
 // MPU control/status vars

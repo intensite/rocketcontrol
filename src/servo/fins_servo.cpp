@@ -25,8 +25,8 @@ void moveServo(float _ypr[]) {
     pos_2 = ((pos_2 < 5) ? 5 : pos_2);
     pos_2 = ((pos_2 >= 175) ? 175 : pos_2);
 
-    Serial.print(" servo:");
-    Serial.print(pos_1);
+    // Serial.print(" servo:");
+    // Serial.print(pos_1);
     servo_1.write(pos_1);  
     servo_2.write(pos_2);  
 
