@@ -46,28 +46,27 @@ void displaySensorData() {
 void setup() {
     // initialize serial communication
     Serial.begin(38400);  // Reduced the speed as it was crashing the arduino at 115200
-    delay(3000);                // waits for two second
-    pinMode(R_LED, OUTPUT);
-    pinMode(G_LED, OUTPUT);
-    pinMode(B_LED, OUTPUT);
+    delay(2000);                // waits for two second
+    pinMode(R_LED, OUTPUT);     digitalWrite(R_LED, HIGH);
+    pinMode(G_LED, OUTPUT);     digitalWrite(G_LED, HIGH);
+    pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
     pinMode(PIEZO_BUZZER, OUTPUT);
 
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
     EIFR = (1 << INTF1);
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
 
-    pinMode(12, OUTPUT);
     ledStatus = LOW;
 
     if (gyro.setupGyro() != 0) {
-        // setup_error = true;
-        // // LED RED
-        // digitalWrite(R_LED, LOW);
-        // digitalWrite(G_LED, HIGH);
-        // digitalWrite(B_LED, HIGH);
-        // is_abort = true;
-        // Serial.println("Problem with Gyroscope detected...");
-        // // return;
+        setup_error = true;
+        // LED RED
+        digitalWrite(R_LED, LOW);
+        digitalWrite(G_LED, HIGH);
+        digitalWrite(B_LED, HIGH);
+        is_abort = true;
+        Serial.println("Problem with Gyroscope not detected...");
+        return;
     }
     if (altitude.setupAlti() !=0) {
         setup_error = true;
@@ -76,7 +75,7 @@ void setup() {
         digitalWrite(G_LED, HIGH);
         digitalWrite(B_LED, HIGH);
         is_abort = true;
-        Serial.println("Problem with altitude detected...");
+        Serial.println("Problem with altitmeter not detected...");
         return;
     }
     setupServo();
@@ -115,7 +114,7 @@ void setup() {
 }
 
 void heartBeat() {
-    unsigned long currentMillis = millis();
+    unsigned long currentHBeatMillis = millis();
 
     if (setup_error || is_abort) {
         // LED RED
@@ -132,14 +131,14 @@ void heartBeat() {
             ledStatus = LOW;
         }
 
-        // digitalWrite(R_LED, HIGH); // High == OFF
-        // digitalWrite(G_LED, ledStatus);
-        // digitalWrite(B_LED, HIGH); 
 
-    if (currentMillis - previousHBeatMillis >= 2000) {
+    if (currentHBeatMillis - previousHBeatMillis >= 2000) {
 
+        digitalWrite(R_LED, HIGH); // High == OFF
+        digitalWrite(G_LED, ledStatus);
+        digitalWrite(B_LED, HIGH); 
 
-        previousHBeatMillis = currentMillis;
+        previousHBeatMillis = currentHBeatMillis;
 
         if(BUZZER_ENABLE) {
             buzz(PIEZO_BUZZER, 2637, 1000/12);
@@ -173,7 +172,7 @@ void loop() {
         processTrajectory(gyro.ypr);
 
         // Debug stuff
-        if (DEBUG)
+        if (DEBUG) 
             displaySensorData();
     
     
