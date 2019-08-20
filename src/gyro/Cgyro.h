@@ -48,7 +48,7 @@ class Gyro {
         float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
         Gyro();
-        void setupGyro();
+        uint8_t setupGyro();
         void ProcessGyroData();
         // float[] Gyro::getYPR();
 
@@ -59,7 +59,7 @@ Gyro::Gyro() {};
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
-void Gyro::setupGyro() {
+uint8_t Gyro::setupGyro() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
@@ -111,6 +111,7 @@ void Gyro::setupGyro() {
         Serial.print(devStatus);
         Serial.println(F(")"));
     }
+    return devStatus;
 }
 
 // float[] Gyro::getYPR() {

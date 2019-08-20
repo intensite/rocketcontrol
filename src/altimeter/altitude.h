@@ -15,7 +15,7 @@ class Altitude {
         float altitude_max;
         unsigned long start_descent_timer;
 
-        void setupAlti();
+        int setupAlti();
         float processAltiData();
         Altitude();
 };

@@ -11,6 +11,20 @@ void setupServo() {
     servo_2.write(90);  
 }
 
+void testServo() {
+    const int8_t test_amplitude = 30;
+
+    // Test Servo #1
+    servo_1.write(90 + test_amplitude);   
+    servo_1.write(90 - test_amplitude);   
+    servo_1.write(90);   
+
+    // Test Servo #2
+    servo_2.write(90 + test_amplitude);   
+    servo_2.write(90 - test_amplitude);   
+    servo_2.write(90);   
+}
+
 void moveServo(float _ypr[]) {
 //ypr[0] * 180/M_PI
 

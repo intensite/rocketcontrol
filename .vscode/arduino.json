@@ -1,7 +1,8 @@
 {
     "arduino.path": "D:/Program Files (x86)/Arduino",
-    "board": "arduino:avr:uno",
+    "board": "arduino:avr:nano",
     "output": "../build",
     "port": "COM3",
-    "sketch": "main.ino"
+    "sketch": "main.ino",
+    "configuration": "cpu=atmega328old"
 }
