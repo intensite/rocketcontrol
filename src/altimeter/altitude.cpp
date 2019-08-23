@@ -10,6 +10,7 @@
 #include "altitude.h"
 #include "I2Cdev.h"
 #include "../parachute/parachute.h"
+#include "../global.h"
 
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
@@ -62,23 +63,27 @@ float Altitude::processAltiData() {
     // Get the current altitude using the altitude_offset
     current_altitude = myPressure.readAltitude() - altitude_offset;
 
+    // Ignore negative altitude
     if (current_altitude < 0) {
         current_altitude = 0;
     }
 
+    // Record the max altitude (overide)
     if (current_altitude > altitude_max){
         altitude_max = current_altitude;
     }
 
-    if(altitude_max > APOGEE_DIFF_METERS) {
-        if((current_altitude - APOGEE_DIFF_METERS) < altitude_max) {
+    // Check if Apogee was reached and beginig descent
+    if(altitude_max > APOGEE_DIFF_METERS) {  // Prevent on the ground and transport accident
+        if((current_altitude - APOGEE_DIFF_METERS) < altitude_max) {  
+            // Here we should be going down.
             Serial.print("Apogee passed. Max altitude: ");
             Serial.println(altitude_max);
-            deployParachute();
+            is_parachute_deployed = deployParachute();
         }
     }
 
+    // Replace the previous_altitude with the current altitude for next pass.
     previous_altitude = current_altitude;
     return current_altitude;
-
 }

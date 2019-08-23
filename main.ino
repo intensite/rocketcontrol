@@ -1,14 +1,17 @@
 
 #include "src/config.h"
-// #include "src/gyro/gyro.h"
+#include "src/global.h"
 #include "src/gyro/Cgyro.h"
 #include "src/altimeter/altitude.h"
 #include "src/servo/fins_servo.h"
 #include "src/flight_correct/correct.h"
 #include "src/buzzer/buzzer.h"
+#include "src/led_color/led_color.h"
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 bool is_abort = false;
+bool is_parachute_deployed = false;
+
 const long interval = 100;
 unsigned long previousMillis = 0;
 unsigned long previousHBeatMillis = 0;
@@ -43,7 +46,37 @@ void displaySensorData() {
 
 } 
 
+
+void testSequence() {
+
+    Serial.println("Begin of tests...........");
+
+    Serial.println("Testing servos...");
+    testServo();
+
+    Serial.println("Testing LED and Buzzer...");
+
+    // Test LED 
+    led_color(LED_COLOR_RED);
+    delay(500);               
+    led_color(LED_COLOR_GREEN);
+    delay(500);               
+    led_color(LED_COLOR_BLUE);
+    delay(500);               
+    led_color(LED_COLOR_OFF);
+
+    // Test PIEZO_BUZZER 
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 3136, 1000/12);
+    buzz(PIEZO_BUZZER, 2093, 1000/12);
+    buzz(PIEZO_BUZZER, 0, 1000/12);
+    Serial.println("End of tests...........");
+}
+
 void setup() {
+    is_abort = false;
+    is_parachute_deployed = false;
+
     // initialize serial communication
     Serial.begin(38400);  // Reduced the speed as it was crashing the arduino at 115200
     delay(2000);                // waits for two second
@@ -51,6 +84,7 @@ void setup() {
     pinMode(G_LED, OUTPUT);     digitalWrite(G_LED, HIGH);
     pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
     pinMode(PIEZO_BUZZER, OUTPUT);
+    pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
 
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
     EIFR = (1 << INTF1);
@@ -58,16 +92,18 @@ void setup() {
 
     ledStatus = LOW;
 
-    if (gyro.setupGyro() != 0) {
-        setup_error = true;
-        // LED RED
-        digitalWrite(R_LED, LOW);
-        digitalWrite(G_LED, HIGH);
-        digitalWrite(B_LED, HIGH);
-        is_abort = true;
-        Serial.println("Problem with Gyroscope not detected...");
-        return;
-    }
+    setupServo();
+
+    // if (gyro.setupGyro() != 0) {
+    //     setup_error = true;
+    //     // LED RED
+    //     digitalWrite(R_LED, LOW);
+    //     digitalWrite(G_LED, HIGH);
+    //     digitalWrite(B_LED, HIGH);
+    //     is_abort = true;
+    //     Serial.println("Problem with Gyroscope not detected...");
+    //     return;
+    // }
     if (altitude.setupAlti() !=0) {
         setup_error = true;
         // LED RED
@@ -78,39 +114,8 @@ void setup() {
         Serial.println("Problem with altitmeter not detected...");
         return;
     }
-    setupServo();
 
-
-    Serial.println("Begin of tests...........");
-
-    testServo();
-
-    // Test LED 
-    digitalWrite(R_LED, LOW);
-    digitalWrite(G_LED, HIGH);
-    digitalWrite(B_LED, HIGH);
-    delay(500);                // waits for two second
-    digitalWrite(R_LED, HIGH);
-    digitalWrite(G_LED, LOW);
-    digitalWrite(B_LED, HIGH); 
-    delay(500);                // waits for two second
-    digitalWrite(R_LED, HIGH);
-    digitalWrite(G_LED, HIGH);
-    digitalWrite(B_LED, LOW);
-    delay(500);                // waits for two second
-    digitalWrite(B_LED, HIGH);
-
-    // Test PIEZO_BUZZER 
-    tone(PIEZO_BUZZER, 900);         // Send 1KHz sound signal...
-    delay(500);                 // waits for two second
-    tone(PIEZO_BUZZER, 2000);         // Send 1KHz sound signal...
-    delay(500);                 // waits for two second
-    tone(PIEZO_BUZZER, 900);         // Send 1KHz sound signal...
-    delay(500);                 // waits for two second
-    tone(PIEZO_BUZZER, 3000);         // Send 1KHz sound signal...
-    delay(500);                 // waits for two second
-    noTone(PIEZO_BUZZER);             // Stop sound...
-    Serial.println("End of tests...........");
+    testSequence();
 }
 
 void heartBeat() {
@@ -124,20 +129,20 @@ void heartBeat() {
         return;
     }
 
-        // Flash Green LED
+    // Flash Green LED every seconds
+    if (currentHBeatMillis - previousHBeatMillis >= 1000) {
         if(ledStatus == LOW) {
             ledStatus = HIGH;
         } else {
             ledStatus = LOW;
         }
-
-
-    if (currentHBeatMillis - previousHBeatMillis >= 2000) {
-
         digitalWrite(R_LED, HIGH); // High == OFF
         digitalWrite(G_LED, ledStatus);
         digitalWrite(B_LED, HIGH); 
+    }
 
+    // Beep sequence
+    if (currentHBeatMillis - previousHBeatMillis >= 2000) {
         previousHBeatMillis = currentHBeatMillis;
 
         if(BUZZER_ENABLE) {
@@ -147,8 +152,6 @@ void heartBeat() {
             buzz(PIEZO_BUZZER, 0, 1000/12);
         }
     }
-
-
 }
 
 void loop() {
