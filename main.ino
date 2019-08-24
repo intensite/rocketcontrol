@@ -94,22 +94,18 @@ void setup() {
 
     setupServo();
 
-    // if (gyro.setupGyro() != 0) {
-    //     setup_error = true;
-    //     // LED RED
-    //     digitalWrite(R_LED, LOW);
-    //     digitalWrite(G_LED, HIGH);
-    //     digitalWrite(B_LED, HIGH);
-    //     is_abort = true;
-    //     Serial.println("Problem with Gyroscope not detected...");
-    //     return;
-    // }
+    if (gyro.setupGyro() != 0) {
+        setup_error = true;
+        // LED RED
+        led_color(LED_COLOR_RED);
+        is_abort = true;
+        Serial.println("Problem with Gyroscope not detected...");
+        return;
+    }
     if (altitude.setupAlti() !=0) {
         setup_error = true;
         // LED RED
-        digitalWrite(R_LED, LOW);
-        digitalWrite(G_LED, HIGH);
-        digitalWrite(B_LED, HIGH);
+        led_color(LED_COLOR_RED);
         is_abort = true;
         Serial.println("Problem with altitmeter not detected...");
         return;
