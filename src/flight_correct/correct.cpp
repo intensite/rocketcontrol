@@ -13,7 +13,8 @@ void processTrajectory(float ypr[3]) {
     if(pos_1 < (90 - EXCESSIVE_ANGLE_THRESHOLD) || pos_1 > (90 + EXCESSIVE_ANGLE_THRESHOLD) || 
         pos_2 < (90 - EXCESSIVE_ANGLE_THRESHOLD) || pos_2 > (90 + EXCESSIVE_ANGLE_THRESHOLD)) {
         // Here we initiate the abort sequence
-        is_abort = true;
+        //is_abort = true;
+        Serial.println("Excessive angle. ABORT SEQUENCE...........");
     } else {
         moveServo(ypr);
     }
