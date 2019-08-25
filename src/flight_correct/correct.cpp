@@ -1,6 +1,7 @@
 
 #include "correct.h"
 #include "../global.h"
+#include "../parachute/parachute.h"
 
 void processTrajectory(float ypr[3]) {
     uint8_t pos_1;
@@ -13,8 +14,9 @@ void processTrajectory(float ypr[3]) {
     if(pos_1 < (90 - EXCESSIVE_ANGLE_THRESHOLD) || pos_1 > (90 + EXCESSIVE_ANGLE_THRESHOLD) || 
         pos_2 < (90 - EXCESSIVE_ANGLE_THRESHOLD) || pos_2 > (90 + EXCESSIVE_ANGLE_THRESHOLD)) {
         // Here we initiate the abort sequence
-        //is_abort = true;
         Serial.println("Excessive angle. ABORT SEQUENCE...........");
+        deployParachute();
+        //is_abort = true;
     } else {
         moveServo(ypr);
     }
