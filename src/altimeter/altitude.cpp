@@ -75,7 +75,9 @@ float Altitude::processAltiData() {
 
     // Check if Apogee was reached and beginig descent
     if(altitude_max > APOGEE_DIFF_METERS) {  // Prevent on the ground and transport accident
-        if((current_altitude - APOGEE_DIFF_METERS) < altitude_max) {  
+        // if((current_altitude - APOGEE_DIFF_METERS) < altitude_max) {  
+
+        if((current_altitude < altitude_max) && ((altitude_max - current_altitude) >= APOGEE_DIFF_METERS))  {  
             // Here we should be going down.
             Serial.print("Apogee passed. Max altitude: ");
             Serial.println(altitude_max);

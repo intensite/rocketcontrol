@@ -37,7 +37,7 @@ void testServo() {
     // Test Servo #2
     servo_2.write(90 + test_amplitude);   
     servo_2.write(90 - test_amplitude);   
-    servo_2.write(90);   
+    servo_2.write(85);   
 }
 
 // OLD Direct Gyro-Servo connection
@@ -47,11 +47,11 @@ void moveServo(float _ypr[]) {
     uint8_t pos_1;
     uint8_t pos_2;
 
-    pos_1 =(uint8_t) 90-(_ypr[1] * 180/M_PI);
+    pos_1 =(uint8_t) 90-((_ypr[1] * 180/M_PI)*-1);
     pos_1 = ((pos_1 < 5) ? 5 : pos_1);
     pos_1 = ((pos_1 >= 175) ? 175 : pos_1);
 
-    pos_2 =(uint8_t) 90-((_ypr[2] * 180/M_PI)*-1);  // Reverse the sign
+    pos_2 =(uint8_t) 90-((_ypr[2] * 180/M_PI));  // Reverse the sign
     pos_2 = ((pos_2 < 5) ? 5 : pos_2);
     pos_2 = ((pos_2 >= 175) ? 175 : pos_2);
 

@@ -1,7 +1,8 @@
 {
     "arduino.path": "/opt/arduino-1.8.9",
-    "board": "arduino:avr:uno",
+    "board": "arduino:avr:nano",
     "output": "../build",
     "port": "/dev/ttyUSB0",
-    "sketch": "main.ino"
+    "sketch": "main.ino",
+    "configuration": "cpu=atmega328old"
 }
