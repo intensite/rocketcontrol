@@ -6,10 +6,13 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/**",
                 "/opt/arduino-1.8.9/hardware/arduino/avr/**",
-                "/opt/arduino-1.8.9/tools/**"
+                "/opt/arduino-1.8.9/tools/**",
+                "D:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
+                "D:\\Program Files (x86)\\Arduino\\tools\\**"
             ],
             "forcedInclude": [
-                "/opt/arduino-1.8.9/hardware/arduino/avr/cores/arduino/Arduino.h"
+                "/opt/arduino-1.8.9/hardware/arduino/avr/cores/arduino/Arduino.h",
+                "D:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
             ],
             "intelliSenseMode": "msvc-x64",
             "cStandard": "c11",

@@ -10,7 +10,8 @@
 #define G_LED A1                            // Analog pin for the Green LED
 #define PIEZO_BUZZER 9                            // Analog pin for the Green LED
  
-
+#define SERVO_1_OFFSET 0                    // Used to compensate the servo #1  misalignment
+#define SERVO_2_OFFSET 0                    // Used to compensate the servo #2 misalignment
 #define APOGEE_DIFF_METERS 10               //  Used to specify minimum altitude for liftoff and minimum decent for parachute deployment. 
 #define EXCESSIVE_ANGLE_THRESHOLD 50         //  Used to specify maximum angle before abort sequence is initiated.
 #define BEEPER_ENABLED 1                     //  Used to specify if the beeped should be neabled or not.
