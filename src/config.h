@@ -28,12 +28,12 @@
 
 
 // PITCH PID CONSTANTS
-#define PID_PITCH_Kp 4
+#define PID_PITCH_Kp 3
 #define PID_PITCH_Ki 0
 #define PID_PITCH_Kd 0
 
 // ROLL PID CONSTANTS
-#define PID_ROLL_Kp 4
+#define PID_ROLL_Kp 3
 #define PID_ROLL_Ki 0
 #define PID_ROLL_Kd 0
 

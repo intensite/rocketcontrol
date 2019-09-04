@@ -87,9 +87,9 @@ void moveServo(float _ypr[]) {
     Serial.print("pitchPID I: ");
     Serial.print(Input_Pitch);
     Serial.print("  O: ");
-    Serial.println(Output_Pitch);
+    Serial.print(Output_Pitch);
 
-    Serial.print("rollhPID I: ");
+    Serial.print("     ------  rollPID I: ");
     Serial.print(Input_Roll);
     Serial.print("  O: ");
     Serial.println(Output_Roll);
