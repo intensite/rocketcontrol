@@ -1,5 +1,6 @@
 #include "fins_servo.h"
 #include <PID_v1.h>
+#include "../global.h"
 
 Servo servo_1; 
 Servo servo_2; 
@@ -75,6 +76,7 @@ void moveServo(float _ypr[]) {
     int pos_1;
     int pos_2;
 
+
     pos_1 =(int) (_ypr[1] * 180/M_PI);
     pos_2 =(int) (_ypr[2] * 180/M_PI);
 
@@ -84,20 +86,21 @@ void moveServo(float _ypr[]) {
     pitchPID.Compute();
     rollPID.Compute();
 
-    Serial.print("pitchPID I: ");
-    Serial.print(Input_Pitch);
-    Serial.print("  O: ");
-    Serial.print(Output_Pitch);
+    // Serial.print("pitchPID I: ");
+    // Serial.print(Input_Pitch);
+    // Serial.print("  O: ");
+    // Serial.print(Output_Pitch);
 
-    Serial.print("     ------  rollPID I: ");
-    Serial.print(Input_Roll);
-    Serial.print("  O: ");
-    Serial.println(Output_Roll);
+    // Serial.print("     ------  rollPID I: ");
+    // Serial.print(Input_Roll);
+    // Serial.print("  O: ");
+    // Serial.println(Output_Roll);
 
- 
     servo_2.write(Output_Roll + 90); 
     servo_1.write(Output_Pitch + 90);  
 
+    // g_servo_pitch = (int)Output_Pitch;
+    // g_servo_roll = (int)Output_Roll;
 }
 
 //@TODO: Make a PID control loop

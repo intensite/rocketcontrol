@@ -14,6 +14,7 @@ class Altitude {
         bool is_apogee;
         float altitude_max;
         unsigned long start_descent_timer;
+        float temperature;
 
         int setupAlti();
         float processAltiData();

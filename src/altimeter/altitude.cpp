@@ -52,8 +52,6 @@ int Altitude::setupAlti() {
     } else {
         return 0;
     }
-
-
 }
 
 
@@ -62,6 +60,8 @@ float Altitude::processAltiData() {
 
     // Get the current altitude using the altitude_offset
     current_altitude = myPressure.readAltitude() - altitude_offset;
+    //temperature = myPressure.readTemp();
+    
 
     // Ignore negative altitude
     if (current_altitude < 0) {
