@@ -17,12 +17,12 @@
 
 
 // SERVO STUFF
-#define SERVO_1_OFFSET 10                    // Used to compensate the servo #1  misalignment
+#define SERVO_1_OFFSET 0                    // Used to compensate the servo #1  misalignment
 #define SERVO_2_OFFSET 0                    // Used to compensate the servo #1  misalignment
 #define SERVO_1_ORIENTATION 1               // Used to reverse the orientation of the servo #1 (possible values 1, -1) 
 #define SERVO_2_ORIENTATION 1               // Used to reverse the orientation of the servo #2 (possible values 1, -1)
 
-#define MAX_FINS_TRAVEL 25                  // Used to specify limits of the fins travel in degrees (+/-)
+#define MAX_FINS_TRAVEL 90                  // Used to specify limits of the fins travel in degrees (+/-)
 
 
 // PITCH PID CONSTANTS

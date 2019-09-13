@@ -7,14 +7,10 @@
 #include "src/flight_correct/correct.h"
 #include "src/buzzer/buzzer.h"
 #include "src/led_color/led_color.h"
-// #include "src/storage/Storage.h"
-// #include "src/storage/LogSystem.h"
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 bool is_abort = false;
 bool is_parachute_deployed = false;
-int g_servo_pitch = 0;
-int g_servo_roll = 0;
 
 const long interval = 100;
 unsigned long previousMillis = 0;
@@ -77,44 +73,9 @@ void testSequence() {
     Serial.println("End of tests...........");
 }
 
-int8_t persistData() {
-    // lr::LogRecord logRecord(
-    //     millis(), 
-    //     altitude.current_altitude, 
-    //     (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
-    //     (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
-    //     g_servo_pitch, // Servo Pitch: ToDo
-    //     g_servo_roll, // Servo Roll : ToDo
-    //     is_parachute_deployed, 
-    //     is_abort, 
-    //     altitude.temperature, // Temperature
-    //     72, // Batt
-    //     gyro.z_gforce  // gForces
-    // );
-    // if (!lr::LogSystem::appendRecord(logRecord)) {
-    //     Serial.println("Probleme de storrage: verifier memoire pleine");
-    //     return 0;
-    // } else {
-    //     Serial.println("Record saved: ");
-    // }
-    // return 1;
-}
-
-void readData() {
-    // int reccount = 0;
-    // if (reccount = lr::LogSystem::currentNumberOfRecords()) {
-    //     for(int i = 0; i < reccount; i++) {
-    //         lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
-    //         logRecord.writeToSerial();
-    //     }
-    // }
-}
-
 void setup() {
     is_abort = false;
     is_parachute_deployed = false;
-    g_servo_pitch = 0;
-    g_servo_roll = 0;
 
     // initialize serial communication
     Serial.begin(38400);  // Reduced the speed as it was crashing the arduino at 115200
@@ -123,7 +84,7 @@ void setup() {
     pinMode(G_LED, OUTPUT);     digitalWrite(G_LED, HIGH);
     pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
     pinMode(PIEZO_BUZZER, OUTPUT);
-    pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
+    pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, HIGH);
 
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
     EIFR = (1 << INTF1);
@@ -149,30 +110,6 @@ void setup() {
         Serial.println("Problem with altitmeter not detected...");
         return;
     }
-
-    // Storage system initialization
-    // Serial.println("Initialize the log system");
-    // if (!lr::Storage::begin()) {
-    //     Serial.println("Storage Problem");
-    //     is_abort = true;
-    //     return;
-    // } else {
-    //     Serial.println("Storage seems OK");
-    //     lr::LogSystem::begin(0);  
-    // }
-    // // End of Storage system initialization
-
-    // if (DATA_RECOVERY_MODE == 1) {
-    //     Serial.println("Data recovery mode detected.  Reading memory....");
-    //     readData();
-    //     Serial.println("Data recovery completed....");
-    //     return;
-    // }
-
-    // if(FORMAT_MEMORY == 1){
-    //     Serial.println("Erassing memory....");
-    //     lr::LogSystem::format();
-    // }
 
     testSequence();
 }
@@ -214,11 +151,6 @@ void heartBeat() {
 }
 
 void loop() {
-
-    // In DATA_RECOVERY_MODE exit the main loop
-    if (DATA_RECOVERY_MODE == 1)
-        return;
-
    unsigned long currentMillis = millis();
     
     if (is_abort) {
@@ -242,7 +174,6 @@ void loop() {
         if (DEBUG) 
             displaySensorData();
     
-        // persistData();
     
         heartBeat();
     }

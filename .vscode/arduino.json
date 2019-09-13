@@ -2,7 +2,7 @@
     "arduino.path": "/opt/arduino-1.8.9",
     "board": "arduino:avr:nano",
     "output": "../build",
-    "port": "COM3",
+    "port": "/dev/ttyUSB0",
     "sketch": "main.ino",
     "configuration": "cpu=atmega328old"
 }

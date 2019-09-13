@@ -86,15 +86,15 @@ void moveServo(float _ypr[]) {
     pitchPID.Compute();
     rollPID.Compute();
 
-    // Serial.print("pitchPID I: ");
-    // Serial.print(Input_Pitch);
-    // Serial.print("  O: ");
-    // Serial.print(Output_Pitch);
+    Serial.print("pitchPID I: ");
+    Serial.print(Input_Pitch);
+    Serial.print("  O: ");
+    Serial.print(Output_Pitch);
 
-    // Serial.print("     ------  rollPID I: ");
-    // Serial.print(Input_Roll);
-    // Serial.print("  O: ");
-    // Serial.println(Output_Roll);
+    Serial.print("     ------  rollPID I: ");
+    Serial.print(Input_Roll);
+    Serial.print("  O: ");
+    Serial.println(Output_Roll);
 
     servo_2.write(Output_Roll + 90); 
     servo_1.write(Output_Pitch + 90);  
