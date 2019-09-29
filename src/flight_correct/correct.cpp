@@ -7,6 +7,11 @@ void processTrajectory(float ypr[3]) {
     uint8_t pos_1;
     uint8_t pos_2;
 
+    if(ypr[1] == 0 || ypr[2] ==0) {
+        // Data invalid do nothing
+        return;
+    }
+
     pos_1 =(uint8_t) 90-(ypr[1] * 180/M_PI);
     pos_2 =(uint8_t) 90-(ypr[2] * 180/M_PI);
 
@@ -15,6 +20,14 @@ void processTrajectory(float ypr[3]) {
         pos_2 < (90 - EXCESSIVE_ANGLE_THRESHOLD) || pos_2 > (90 + EXCESSIVE_ANGLE_THRESHOLD)) {
         // Here we initiate the abort sequence
         Serial.println("Excessive angle. ABORT SEQUENCE...........");
+        Serial.print("pos_1: ");
+        Serial.print(pos_1);
+        Serial.print("  pos_2: ");
+        Serial.print(pos_2);
+        Serial.print("  ypr[1]: ");
+        Serial.print(ypr[1]);
+        Serial.print("  ypr[2]: ");
+        Serial.println(ypr[2]);
         deployParachute();
         //is_abort = true;
     } else {
