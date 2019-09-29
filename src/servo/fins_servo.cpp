@@ -76,6 +76,10 @@ void moveServo(float _ypr[]) {
     int pos_1;
     int pos_2;
 
+    if(_ypr[1] == 0 || _ypr[2] ==0) {
+        // Data invalid do nothing
+        return;
+    }
 
     pos_1 =(int) (_ypr[1] * 180/M_PI);
     pos_2 =(int) (_ypr[2] * 180/M_PI);
@@ -96,11 +100,11 @@ void moveServo(float _ypr[]) {
     // Serial.print("  O: ");
     // Serial.println(Output_Roll);
 
-    servo_2.write(Output_Roll + 90); 
-    servo_1.write(Output_Pitch + 90);  
+    servo_2.write(Output_Roll + 90 + SERVO_2_OFFSET); 
+    servo_1.write(Output_Pitch + 90 +  SERVO_1_OFFSET);  
 
-    // g_servo_pitch = (int)Output_Pitch;
-    // g_servo_roll = (int)Output_Roll;
+    g_servo_pitch = (int)Output_Pitch;
+    g_servo_roll = (int)Output_Roll;
 }
 
 //@TODO: Make a PID control loop
