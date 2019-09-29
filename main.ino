@@ -7,8 +7,8 @@
 #include "src/flight_correct/correct.h"
 #include "src/buzzer/buzzer.h"
 #include "src/led_color/led_color.h"
-// #include "src/storage/Storage.h"
-// #include "src/storage/LogSystem.h"
+#include "src/storage/Storage.h"
+#include "src/storage/LogSystem.h"
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 bool is_abort = false;
@@ -38,7 +38,7 @@ void dmpDataReady() {
 
 void displaySensorData() {
 
-            // Debug stuff
+        // Debug stuff
         Serial.print(" Gyro:");
         Serial.print(gyro.ypr[1] * 180/M_PI);
         Serial.print(" : ");
@@ -46,15 +46,12 @@ void displaySensorData() {
         
         Serial.print("Altitude:");
         Serial.println(altitude.current_altitude);
-        
-
 } 
 
 
 void testSequence() {
 
     Serial.println("Begin of tests...........");
-
     Serial.println("Testing servos...");
     testServo();
 
@@ -78,36 +75,42 @@ void testSequence() {
 }
 
 int8_t persistData() {
-    // lr::LogRecord logRecord(
-    //     millis(), 
-    //     altitude.current_altitude, 
-    //     (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
-    //     (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
-    //     g_servo_pitch, // Servo Pitch: ToDo
-    //     g_servo_roll, // Servo Roll : ToDo
-    //     is_parachute_deployed, 
-    //     is_abort, 
-    //     altitude.temperature, // Temperature
-    //     72, // Batt
-    //     gyro.z_gforce  // gForces
-    // );
-    // if (!lr::LogSystem::appendRecord(logRecord)) {
-    //     Serial.println("Probleme de storrage: verifier memoire pleine");
-    //     return 0;
-    // } else {
-    //     Serial.println("Record saved: ");
-    // }
-    // return 1;
+
+    if(gyro.ypr[1] == 0 || gyro.ypr[2] ==0) {
+        // Data invalid do nothing
+        return;
+    }
+
+    lr::LogRecord logRecord(
+        millis(), 
+        altitude.current_altitude, 
+        (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
+        (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
+        g_servo_pitch, // Servo Pitch: ToDo
+        g_servo_roll, // Servo Roll : ToDo
+        is_parachute_deployed, 
+        is_abort, 
+        altitude.temperature, // Temperature
+        72, // Batt
+        gyro.z_gforce  // gForces
+    );
+    if (!lr::LogSystem::appendRecord(logRecord)) {
+        Serial.println("Probleme de storrage: verifier memoire pleine");
+        return 0;
+    } else {
+        Serial.println("Record saved: ");
+    }
+    return 1;
 }
 
 void readData() {
-    // int reccount = 0;
-    // if (reccount = lr::LogSystem::currentNumberOfRecords()) {
-    //     for(int i = 0; i < reccount; i++) {
-    //         lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
-    //         logRecord.writeToSerial();
-    //     }
-    // }
+    int reccount = 0;
+    if (reccount = lr::LogSystem::currentNumberOfRecords()) {
+        for(int i = 0; i < reccount; i++) {
+            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
+            logRecord.writeToSerial();
+        }
+    }
 }
 
 void setup() {
@@ -150,29 +153,29 @@ void setup() {
         return;
     }
 
-    // Storage system initialization
-    // Serial.println("Initialize the log system");
-    // if (!lr::Storage::begin()) {
-    //     Serial.println("Storage Problem");
-    //     is_abort = true;
-    //     return;
-    // } else {
-    //     Serial.println("Storage seems OK");
-    //     lr::LogSystem::begin(0);  
-    // }
-    // // End of Storage system initialization
+    //Storage system initialization
+    Serial.println("Initialize the log system");
+    if (!lr::Storage::begin()) {
+        Serial.println("Storage Problem");
+        is_abort = true;
+        return;
+    } else {
+        lr::LogSystem::begin(0);  
+        Serial.println("Storage seems OK");
+    }
+    // End of Storage system initialization
 
-    // if (DATA_RECOVERY_MODE == 1) {
-    //     Serial.println("Data recovery mode detected.  Reading memory....");
-    //     readData();
-    //     Serial.println("Data recovery completed....");
-    //     return;
-    // }
+    if (DATA_RECOVERY_MODE == 1) {
+        Serial.println("Data recovery mode detected.  Reading memory....");
+        readData();
+        Serial.println("Data recovery completed....");
+        return;
+    }
 
-    // if(FORMAT_MEMORY == 1){
-    //     Serial.println("Erassing memory....");
-    //     lr::LogSystem::format();
-    // }
+    if(FORMAT_MEMORY == 1){
+        Serial.println("Erassing memory....");
+        lr::LogSystem::format();
+    }
 
     testSequence();
 }
@@ -221,20 +224,23 @@ void loop() {
 
    unsigned long currentMillis = millis();
     
+    // The abort sequence was triggered (throw your arms in the air) exit the main loop
     if (is_abort) {
         return;
     }
 
-
+    // Some data from the Gyroscope is ready to be processed
     if(mpuInterrupt) {
         mpuInterrupt = false;
         gyro.ProcessGyroData();
     }
    
+    // Used to slowdown the process to the number of milliseconds defined in variable interval (see config.h file)
      if (currentMillis - previousMillis >= interval) {
 
         previousMillis = currentMillis; 
 
+        // Read the altitude and process trajectory with the servos
         altitude.processAltiData();
         processTrajectory(gyro.ypr);
 
@@ -242,7 +248,8 @@ void loop() {
         if (DEBUG) 
             displaySensorData();
     
-        // persistData();
+        // Persist flight data to memory
+        persistData();
     
         heartBeat();
     }
