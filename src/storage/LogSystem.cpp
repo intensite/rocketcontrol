@@ -241,16 +241,22 @@ void begin(uint32_t reservedForConfig)
     
     // Calculate the maximum number of records.
     gMaximumNumberOfRecords = (Storage::size() - gReservedForConfig) / sizeof(InternalLogRecord);
+    // Serial.println("DEBUG*******Get gMaximumNumberOfRecords *************************");
+    // Serial.println(gMaximumNumberOfRecords);
     // Scan the storage for valid records.
     uint32_t index = 0;
     InternalLogRecord record = getInternalRecord(index);
-    while (!isInternalRecordNull(&record)) {
+    while (!isInternalRecordNull(&record) && index <= gMaximumNumberOfRecords) {
         if (!isInternalRecordValid(&record)) {
             break;
         }
         ++index;
         record = getInternalRecord(index);
     }
+    if(index >= gMaximumNumberOfRecords) {
+        Serial.println("############ MEMORY FULL #######################");
+    }
+
     gCurrentNumberOfRecords = index;
 }
 
