@@ -145,6 +145,10 @@ void Gyro::ProcessGyroData() {
             // track FIFO count here in case there is > 1 packet available
             // (this lets us immediately read more without waiting for an interrupt)
             fifoCount -= packetSize;
+
+            // clearing the buffer after every read apparently solve the FIFO overflow problem
+            // https://arduino.stackexchange.com/a/10309
+            mpu.resetFIFO();  
         }
         #ifdef OUTPUT_READABLE_YAWPITCHROLL
             // display Euler angles in degrees
