@@ -16,7 +16,7 @@ bool is_parachute_deployed = false;
 int g_servo_pitch = 0;
 int g_servo_roll = 0;
 
-const long interval = 100;
+// const long interval = 100;
 unsigned long previousMillis = 0;
 unsigned long previousHBeatMillis = 0;
 int setup_error = false;
@@ -236,7 +236,7 @@ void loop() {
     }
    
     // Used to slowdown the process to the number of milliseconds defined in variable interval (see config.h file)
-     if (currentMillis - previousMillis >= interval) {
+     if (currentMillis - previousMillis >= SCAN_TIME_INTERVAL) {
 
         previousMillis = currentMillis; 
 
