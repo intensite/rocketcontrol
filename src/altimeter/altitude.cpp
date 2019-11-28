@@ -46,7 +46,7 @@ int Altitude::setupAlti() {
     myPressure.setOversampleRate(7); // Set Oversample to the recommended 128
     myPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
     altitude_offset = myPressure.readAltitude();
-    Serial.print("Altitude ofset = "); Serial.println(altitude_offset); 
+    Serial.print(F("Altitude ofset = ")); Serial.println(altitude_offset); 
     if (altitude_offset == -999) {
         return -999;  // Error out after max of 512ms for a read
     } else {
@@ -79,7 +79,7 @@ float Altitude::processAltiData() {
 
         if((current_altitude < altitude_max) && ((altitude_max - current_altitude) >= APOGEE_DIFF_METERS))  {  
             // Here we should be going down.
-            Serial.print("Apogee passed. Max altitude: ");
+            Serial.print(F("Apogee passed. Max altitude: "));
             Serial.println(altitude_max);
             is_parachute_deployed = deployParachute();
         }

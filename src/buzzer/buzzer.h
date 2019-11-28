@@ -1,1 +1,1 @@
-void buzz(int targetPin, long frequency, long length);
+void buzz(byte targetPin, long frequency, long length);

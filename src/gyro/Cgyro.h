@@ -172,11 +172,11 @@ void Gyro::ProcessGyroData() {
             mpu.dmpGetAccel(&aa, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            Serial.print("areal\t");
+            Serial.print(F("areal\t"));
             Serial.print(aaReal.x);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.print(aaReal.y);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.println(aaReal.z);
         #endif
 
@@ -188,11 +188,11 @@ void Gyro::ProcessGyroData() {
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-            Serial.print("aworld\t");
+            Serial.print(F("aworld\t"));
             Serial.print(aaWorld.x);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.print(aaWorld.y);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.println(aaWorld.z);
         #endif
     

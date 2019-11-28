@@ -7,8 +7,10 @@
 #include "src/flight_correct/correct.h"
 #include "src/buzzer/buzzer.h"
 #include "src/led_color/led_color.h"
-#include "src/storage/Storage.h"
-#include "src/storage/LogSystem.h"
+// #include "src/storage/Storage.h"
+// #include "src/storage/LogSystem.h"
+// #include "src/storage/LogSystem_SD.h"
+#include "src/parachute/parachute.h"
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 bool is_abort = false;
@@ -19,10 +21,11 @@ int g_servo_roll = 0;
 // const long interval = 100;
 unsigned long previousMillis = 0;
 unsigned long previousHBeatMillis = 0;
-int setup_error = false;
+bool setup_error = false;
 
 Altitude altitude;
 Gyro gyro;
+// LogSystem log2;
 bool ledStatus;
 
 // ================================================================
@@ -36,26 +39,30 @@ void dmpDataReady() {
 }
  
 
+/*****************************************************************
+ *  Used to display sensor data onthe cosole. Mainly to debug.
+ *  Should no be used durring flight as it disturbs the interupts of the I2C
+ * ***************************************************************/
 void displaySensorData() {
 
         // Debug stuff
-        Serial.print(" Gyro:");
+        Serial.print(F(" Gyro:"));
         Serial.print(gyro.ypr[1] * 180/M_PI);
-        Serial.print(" : ");
+        Serial.print(F(" : "));
         Serial.println(gyro.ypr[2] * 180/M_PI);
         
-        Serial.print("Altitude:");
+        Serial.print(F("Altitude:"));
         Serial.println(altitude.current_altitude);
 } 
 
 
 void testSequence() {
 
-    Serial.println("Begin of tests...........");
-    Serial.println("Testing servos...");
+    Serial.println(F("Begin of tests..........."));
+    Serial.println(F("Testing servos..."));
     testServo();
 
-    Serial.println("Testing LED and Buzzer...");
+    Serial.println(F("Testing LED and Buzzer..."));
 
     // Test LED 
     led_color(LED_COLOR_RED);
@@ -71,47 +78,71 @@ void testSequence() {
     buzz(PIEZO_BUZZER, 3136, 1000/12);
     buzz(PIEZO_BUZZER, 2093, 1000/12);
     buzz(PIEZO_BUZZER, 0, 1000/12);
-    Serial.println("End of tests...........");
+    Serial.println(F("End of tests..........."));
+}
+
+void debugParachute() {
+    byte countdown = 10;
+    // Serial.println("Debug mode. Press any key to deploy parachute....................");
+    // while(Serial.available() == 0) { }  // There really is nothing between the {} braces
+
+    while(countdown >=0) {
+        delay(1000);
+        buzz(PIEZO_BUZZER, 2637, 1000/12);
+        countdown--;
+    }
+
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 10000/12);
+    char x = Serial.read();
+    deployParachute();
+    is_abort = true;
+    is_parachute_deployed = true;
+    return;
 }
 
 int8_t persistData() {
 
     if(gyro.ypr[1] == 0 || gyro.ypr[2] ==0) {
         // Data invalid do nothing
-        return;
+        return 1;
     }
 
-    lr::LogRecord logRecord(
-        millis(), 
-        altitude.current_altitude, 
-        (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
-        (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
-        g_servo_pitch, // Servo Pitch: ToDo
-        g_servo_roll, // Servo Roll : ToDo
-        is_parachute_deployed, 
-        is_abort, 
-        altitude.temperature, // Temperature
-        72, // Batt
-        gyro.z_gforce  // gForces
-    );
-    if (!lr::LogSystem::appendRecord(logRecord)) {
-        Serial.println("Probleme de storrage: verifier memoire pleine");
-        return 0;
-    } else {
-        Serial.println("Record saved: ");
-    }
+    //// lr::LogRecord logRecord(
+    // LogRecord logRecord(
+    //     millis(), 
+    //     altitude.current_altitude, 
+    //     (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
+    //     (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
+    //     g_servo_pitch, // Servo Pitch: ToDo
+    //     g_servo_roll, // Servo Roll : ToDo
+    //     is_parachute_deployed, 
+    //     is_abort, 
+    //     altitude.temperature, // Temperature
+    //     72, // Batt
+    //     gyro.z_gforce  // gForces
+    // );
+    // if (!lr::LogSystem::appendRecord(logRecord)) {
+    //     Serial.println("Probleme de storrage: verifier memoire pleine");
+    //     return 0;
+    // } else {
+    //     Serial.println("Record saved: ");
+    // }
     return 1;
 }
 
-void readData() {
-    int reccount = 0;
-    if (reccount = lr::LogSystem::currentNumberOfRecords()) {
-        for(int i = 0; i < reccount; i++) {
-            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
-            logRecord.writeToSerial();
-        }
-    }
-}
+// void readData() {
+//     int reccount = 0;
+//     // if (reccount = lr::LogSystem::currentNumberOfRecords()) {
+//     //     for(int i = 0; i < reccount; i++) {
+//     //         lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
+//     //         logRecord.writeToSerial();
+//     //     }
+//     // }
+// }
 
 void setup() {
     is_abort = false;
@@ -136,48 +167,62 @@ void setup() {
 
     setupServo();
 
-    if (gyro.setupGyro() != 0) {
-        setup_error = true;
-        // LED RED
-        led_color(LED_COLOR_RED);
-        is_abort = true;
-        Serial.println("Problem with Gyroscope not detected...");
-        return;
-    }
+    // if (gyro.setupGyro() != 0) {
+    //     setup_error = true;
+    //     // LED RED
+    //     led_color(LED_COLOR_RED);
+    //     is_abort = true;
+    //     Serial.println(F("Problem with Gyroscope not detected..."));
+    //     return;
+    // }
+    
     if (altitude.setupAlti() !=0) {
         setup_error = true;
         // LED RED
         led_color(LED_COLOR_RED);
         is_abort = true;
-        Serial.println("Problem with altitmeter not detected...");
+        Serial.println(F("Problem with altitmeter not detected..."));
         return;
     }
 
     //Storage system initialization
-    Serial.println("Initialize the log system");
-    if (!lr::Storage::begin()) {
-        Serial.println("Storage Problem");
-        is_abort = true;
-        return;
-    } else {
-        lr::LogSystem::begin(0);  
-        Serial.println("Storage seems OK");
-    }
+    Serial.println(F("Initialize the log system"));
+    //// FRAM LOG SYSTEM
+    // if (!lr::Storage::begin()) {
+    //     Serial.println("Storage Problem");
+    //     is_abort = true;
+    //     return;
+    // } else {
+    //     lr::LogSystem::begin(0);  
+    //     Serial.println("Storage seems OK");
+    // }
+
+    //// SD CARD LOG SYSTEM
+    // if (!log2.begin()) {
+    //     Serial.println(F("Storage Problem"));
+    //     is_abort = true;
+    //     return;
+    // } else {
+    //     Serial.println(F("Storage seems OK"));
+    // }
+
+
     // End of Storage system initialization
 
     if (DATA_RECOVERY_MODE == 1) {
-        Serial.println("Data recovery mode detected.  Reading memory....");
-        readData();
-        Serial.println("Data recovery completed....");
+        Serial.println(F("Data recovery mode detected.  Reading memory...."));
+        //readData();
+        Serial.println(F("Data recovery completed...."));
         return;
     }
 
-    if(FORMAT_MEMORY == 1){
-        Serial.println("Erassing memory....");
-        lr::LogSystem::format();
-    }
+    // if(FORMAT_MEMORY == 1){
+    //     Serial.println("Erassing memory....");
+    //     lr::LogSystem::format();
+    // }
 
     testSequence();
+    //debugParachute();
 }
 
 void heartBeat() {
@@ -249,7 +294,7 @@ void loop() {
             displaySensorData();
     
         // Persist flight data to memory
-        persistData();
+        // persistData();
     
         heartBeat();
     }

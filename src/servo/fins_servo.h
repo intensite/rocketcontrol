@@ -7,3 +7,4 @@
 void moveServo(float _ypr[]);
 void setupServo();
 void testServo();
+void disableServo();

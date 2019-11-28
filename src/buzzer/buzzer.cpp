@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-void buzz(int targetPin, long frequency, long length) {
+void buzz(byte targetPin, long frequency, long length) {
   
   long delayValue = 1000000/frequency/2; // calculate the delay value between transitions
   //// 1 second's worth of microseconds, divided by the frequency, then split in half since

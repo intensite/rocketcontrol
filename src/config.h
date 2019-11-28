@@ -11,6 +11,7 @@
 #define PIEZO_BUZZER 9                            // Analog pin for the Green LED
  
 
+// ALTITUDE & ANGLE VARIABLES
 #define APOGEE_DIFF_METERS 10               //  Used to specify minimum altitude for liftoff and minimum decent for parachute deployment. 
 #define EXCESSIVE_ANGLE_THRESHOLD 50         //  Used to specify maximum angle before abort sequence is initiated.
 #define SCAN_TIME_INTERVAL 100                //  Used to specify the refresh rate in mili-seconds of the instruments (altimeter and gyroscope).
