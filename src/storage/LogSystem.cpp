@@ -69,25 +69,25 @@ bool LogRecord::isNull() const
 void LogRecord::writeToSerial() const
 {
     Serial.print(_timestamp);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_altitude);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_pitch);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_roll);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_pitchServo);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_rollServo);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_parachute);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_abort);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_temperature);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.print(_battery);
-    Serial.print(",");
+    Serial.print(F(","));
     Serial.println(_gForces);
 }
 
@@ -241,7 +241,7 @@ void begin(uint32_t reservedForConfig)
     
     // Calculate the maximum number of records.
     gMaximumNumberOfRecords = (Storage::size() - gReservedForConfig) / sizeof(InternalLogRecord);
-    // Serial.println("DEBUG*******Get gMaximumNumberOfRecords *************************");
+    // Serial.println(F("DEBUG*******Get gMaximumNumberOfRecords *************************"));
     // Serial.println(gMaximumNumberOfRecords);
     // Scan the storage for valid records.
     uint32_t index = 0;
@@ -254,7 +254,7 @@ void begin(uint32_t reservedForConfig)
         record = getInternalRecord(index);
     }
     if(index >= gMaximumNumberOfRecords) {
-        Serial.println("############ MEMORY FULL #######################");
+        Serial.println(F("############ MEMORY FULL #######################"));
     }
 
     gCurrentNumberOfRecords = index;
