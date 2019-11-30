@@ -78,7 +78,7 @@ int8_t persistData() {
 
     if(gyro.ypr[1] == 0 || gyro.ypr[2] ==0) {
         // Data invalid do nothing
-        return;
+        return 1;
     }
 
     lr::LogRecord logRecord(
@@ -129,7 +129,7 @@ void setup() {
     pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
 
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
-    EIFR = (1 << INTF1);
+    // EIFR = (1 << INTF1);
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
 
     ledStatus = LOW;
@@ -245,8 +245,7 @@ void loop() {
         processTrajectory(gyro.ypr);
 
         // Debug stuff
-        if (DEBUG) 
-            displaySensorData();
+        // if (DEBUG) { displaySensorData(); }
     
         // Persist flight data to memory
         persistData();

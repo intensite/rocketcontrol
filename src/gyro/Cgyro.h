@@ -7,7 +7,7 @@
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
 // #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-//     #include "Wire.h"
+     #include "Wire.h"
 // #endif
 
 #define OUTPUT_READABLE_YAWPITCHROLL
@@ -94,7 +94,7 @@ uint8_t Gyro::setupGyro() {
         // Calibration Time: generate offsets and calibrate our MPU6050
         mpu.CalibrateAccel(6);
         mpu.CalibrateGyro(6);
-        mpu.PrintActiveOffsets();
+        // mpu.PrintActiveOffsets(); // Disabled in ESP32 version of the library :-(
         // turn on the DMP, now that it's ready
         // Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);

@@ -5,11 +5,11 @@
 #define FINS_SERVO_1_PIN 6 
 #define FINS_SERVO_2_PIN 5
 #define PARACHUTE_IGNITER_PIN 2
-#define R_LED A3                            // Analog pin for the Red LED
-#define B_LED A0                            // Analog pin for the Blue LED
-#define G_LED A1                            // Analog pin for the Green LED
-#define PIEZO_BUZZER 9                            // Analog pin for the Green LED
- 
+#define R_LED 4 //A3                            // Analog pin for the Red LED
+#define B_LED 26   //A0                            // Analog pin for the Blue LED
+#define G_LED 25 //A1                            // Analog pin for the Green LED
+#define PIEZO_BUZZER 9                      // Digital pin for the BUZZER
+  
 
 #define APOGEE_DIFF_METERS 10               //  Used to specify minimum altitude for liftoff and minimum decent for parachute deployment. 
 #define EXCESSIVE_ANGLE_THRESHOLD 50         //  Used to specify maximum angle before abort sequence is initiated.

@@ -3,6 +3,10 @@
         {
             "name": "Win32",
             "includePath": [
+                "C:\\Users\\stephen\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
+                "C:\\Users\\stephen\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.5.2\\**",
+                "C:\\Users\\stephen\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\**",
+                "C:\\Users\\stephen\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.2\\**",
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/**",
                 "/opt/arduino-1.8.9/hardware/arduino/avr/**",
@@ -10,10 +14,7 @@
                 "D:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
                 "D:\\Program Files (x86)\\Arduino\\tools\\**"
             ],
-            "forcedInclude": [
-                "/opt/arduino-1.8.9/hardware/arduino/avr/cores/arduino/Arduino.h",
-                "D:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
-            ],
+            "forcedInclude": [],
             "intelliSenseMode": "msvc-x64",
             "cStandard": "c11",
             "cppStandard": "c++17"

@@ -1,8 +1,8 @@
 {
     "arduino.path": "/opt/arduino-1.8.9",
-    "board": "arduino:avr:nano",
+    "board": "esp32:esp32:featheresp32",
     "output": "../build",
     "port": "COM3",
     "sketch": "main.ino",
-    "configuration": "cpu=atmega328old"
+    "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none"
 }
