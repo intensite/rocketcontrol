@@ -32,13 +32,18 @@ void testServo() {
 
     // Test Servo #1
     servo_1.write(90 + test_amplitude);   
+    delay(300);
     servo_1.write(90 - test_amplitude);   
-    servo_1.write(90);   
+    delay(300);
+    servo_1.write(90 + SERVO_1_OFFSET);   
+    delay(300);
 
     // Test Servo #2
     servo_2.write(90 + test_amplitude);   
+    delay(300);
     servo_2.write(90 - test_amplitude);   
-    servo_2.write(85);   
+    delay(300);
+    servo_2.write(90 + SERVO_2_OFFSET);   
 }
 
 void disableServo() {
