@@ -49,9 +49,9 @@ void displaySensorData() {
         Serial.print(F(" Gyro:"));
         Serial.print(gyro.ypr[1] * 180/M_PI);
         Serial.print(F(" : "));
-        Serial.println(gyro.ypr[2] * 180/M_PI);
+        Serial.print(gyro.ypr[2] * 180/M_PI);
         
-        Serial.print(F("Altitude:"));
+        Serial.print(F("\t\tAltitude:"));
         Serial.println(altitude.current_altitude);
 } 
 
@@ -167,14 +167,14 @@ void setup() {
 
     setupServo();
 
-    // if (gyro.setupGyro() != 0) {
-    //     setup_error = true;
-    //     // LED RED
-    //     led_color(LED_COLOR_RED);
-    //     is_abort = true;
-    //     Serial.println(F("Problem with Gyroscope not detected..."));
-    //     return;
-    // }
+    if (gyro.setupGyro() != 0) {
+        setup_error = true;
+        // LED RED
+        led_color(LED_COLOR_RED);
+        is_abort = true;
+        Serial.println(F("Problem with Gyroscope not detected..."));
+        return;
+    }
     
     if (altitude.setupAlti() !=0) {
         setup_error = true;
