@@ -15,13 +15,16 @@
 //#define OUTPUT_READABLE_WORLDACCEL
 
 
-// CALIBRATION CONSTANTS CHANGE TO CALIBRATE
-#define X_GYRO_OFFSETS 5
-#define Y_GYRO_OFFSETS 41
-#define Z_GYRO_OFFSETS 57
-#define X_ACCEL_OFFSETS -1198
-#define Y_ACCEL_OFFSETS 97
-#define Z_ACCEL_OFFSETS 1752
+// ********************************************************
+// * Calibration constants moved to the config file 
+// ********************************************************
+// // CALIBRATION CONSTANTS CHANGE TO CALIBRATE
+// #define X_GYRO_OFFSETS 5
+// #define Y_GYRO_OFFSETS 41
+// #define Z_GYRO_OFFSETS 57
+// #define X_ACCEL_OFFSETS -1198
+// #define Y_ACCEL_OFFSETS 97
+// #define Z_ACCEL_OFFSETS 1752
     
 
 class Gyro {
