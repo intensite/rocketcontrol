@@ -23,7 +23,7 @@
 #define SERVO_1_ORIENTATION 1               // Used to reverse the orientation of the servo #1 (possible values 1, -1) 
 #define SERVO_2_ORIENTATION 1               // Used to reverse the orientation of the servo #2 (possible values 1, -1)
 
-#define MAX_FINS_TRAVEL 50                  // Used to specify limits of the fins travel in degrees (+/-)
+#define MAX_FINS_TRAVEL 15                  // Used to specify limits of the fins travel in degrees (+/-)
 
 
 // PITCH PID CONSTANTS
@@ -36,7 +36,15 @@
 #define PID_ROLL_Ki 0
 #define PID_ROLL_Kd 0.5
 
-#define DEBUG 0                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
+// CALIBRATION CONSTANTS CHANGE TO CALIBRATE
+#define X_GYRO_OFFSETS 5
+#define Y_GYRO_OFFSETS 41
+#define Z_GYRO_OFFSETS 57
+#define X_ACCEL_OFFSETS -1198
+#define Y_ACCEL_OFFSETS 97
+#define Z_ACCEL_OFFSETS 1752
+
+#define DEBUG 1                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
 #define BUZZER_ENABLE 0                     // Set to 1 to enable the buzzer. Set to 0 otherwise.
 
 #define DATA_RECOVERY_MODE 0                // Set to 1 to read collected data from memory: 0 to save data to memory
