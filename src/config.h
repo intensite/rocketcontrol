@@ -1,5 +1,6 @@
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
+#define I2CDEV_IMPLEMENTATION I2CDEV_BUILTIN_FASTWIRE
 
 // PIN ASSIGNMENT 
 #define FINS_SERVO_1_PIN 6 
@@ -47,7 +48,7 @@
 #define DEBUG 1                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
 #define BUZZER_ENABLE 0                     // Set to 1 to enable the buzzer. Set to 0 otherwise.
 
-#define DATA_RECOVERY_MODE 0                // Set to 1 to read collected data from memory: 0 to save data to memory
+#define DATA_RECOVERY_MODE 1                // Set to 1 to read collected data from memory: 0 to save data to memory
 #define FORMAT_MEMORY 1                     // Set to 1 to erase memory.
 
 #endif // CONFIG_FILE_H

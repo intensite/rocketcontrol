@@ -7,8 +7,8 @@
 #include "src/flight_correct/correct.h"
 #include "src/buzzer/buzzer.h"
 #include "src/led_color/led_color.h"
-// #include "src/storage/Storage.h"
-// #include "src/storage/LogSystem.h"
+#include "src/storage/Storage.h"
+#include "src/storage/LogSystem.h"
 // #include "src/storage/LogSystem_SD.h"
 #include "src/parachute/parachute.h"
 
@@ -25,7 +25,7 @@ bool setup_error = false;
 
 Altitude altitude;
 Gyro gyro;
-// LogSystem log2;
+// LogSystem log2;  //// SD CARD LOG SYSTEM (Not for FRAM)
 bool ledStatus;
 
 // ================================================================
@@ -111,38 +111,38 @@ int8_t persistData() {
         return 1;
     }
 
-    //// lr::LogRecord logRecord(
+    lr::LogRecord logRecord(
     // LogRecord logRecord(
-    //     millis(), 
-    //     altitude.current_altitude, 
-    //     (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
-    //     (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
-    //     g_servo_pitch, // Servo Pitch: ToDo
-    //     g_servo_roll, // Servo Roll : ToDo
-    //     is_parachute_deployed, 
-    //     is_abort, 
-    //     altitude.temperature, // Temperature
-    //     72, // Batt
-    //     gyro.z_gforce  // gForces
-    // );
-    // if (!lr::LogSystem::appendRecord(logRecord)) {
-    //     Serial.println("Probleme de storrage: verifier memoire pleine");
-    //     return 0;
-    // } else {
-    //     Serial.println("Record saved: ");
-    // }
+        millis(), 
+        altitude.current_altitude, 
+        (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
+        (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
+        g_servo_pitch, // Servo Pitch: ToDo
+        g_servo_roll, // Servo Roll : ToDo
+        is_parachute_deployed, 
+        is_abort, 
+        altitude.temperature, // Temperature
+        72, // Batt (a faire)
+        gyro.z_gforce  // gForces
+    );
+    if (!lr::LogSystem::appendRecord(logRecord)) {
+        Serial.println("Probleme de storrage: verifier memoire pleine");
+        return 0;
+    } else {
+        Serial.println("Record saved: ");
+    }
     return 1;
 }
 
-// void readData() {
-//     int reccount = 0;
-//     // if (reccount = lr::LogSystem::currentNumberOfRecords()) {
-//     //     for(int i = 0; i < reccount; i++) {
-//     //         lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
-//     //         logRecord.writeToSerial();
-//     //     }
-//     // }
-// }
+void readData() {
+    int reccount = 0;
+    if (reccount = lr::LogSystem::currentNumberOfRecords()) {
+        for(int i = 0; i < reccount; i++) {
+            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
+            logRecord.writeToSerial();
+        }
+    }
+}
 
 void setup() {
     is_abort = false;
@@ -187,15 +187,15 @@ void setup() {
 
     //Storage system initialization
     Serial.println(F("Initialize the log system"));
-    //// FRAM LOG SYSTEM
-    // if (!lr::Storage::begin()) {
-    //     Serial.println("Storage Problem");
-    //     is_abort = true;
-    //     return;
-    // } else {
-    //     lr::LogSystem::begin(0);  
-    //     Serial.println("Storage seems OK");
-    // }
+    // FRAM LOG SYSTEM
+    if (!lr::Storage::begin()) {
+        Serial.println("Storage Problem");
+        is_abort = true;
+        return;
+    } else {
+        lr::LogSystem::begin(0);  
+        Serial.println("Storage seems OK");
+    }
 
     //// SD CARD LOG SYSTEM
     // if (!log2.begin()) {
@@ -211,15 +211,15 @@ void setup() {
 
     if (DATA_RECOVERY_MODE == 1) {
         Serial.println(F("Data recovery mode detected.  Reading memory...."));
-        //readData();
+        readData();
         Serial.println(F("Data recovery completed...."));
         return;
+    } else {
+        if(FORMAT_MEMORY == 1){
+            Serial.println(F("Erassing memory...."));
+            lr::LogSystem::format();
+        }
     }
-
-    // if(FORMAT_MEMORY == 1){
-    //     Serial.println("Erassing memory....");
-    //     lr::LogSystem::format();
-    // }
 
     testSequence();
     //debugParachute();
@@ -294,7 +294,7 @@ void loop() {
             displaySensorData();
     
         // Persist flight data to memory
-        // persistData();
+        persistData();
     
         heartBeat();
     }

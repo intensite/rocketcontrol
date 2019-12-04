@@ -19,15 +19,13 @@
 //
 
 #include "Storage.h"
-// #define I2CDEV_IMPLEMENTATION       I2CDEV_BUILTIN_FASTWIRE
-// // #include <Wire.h>
-// #include "I2Cdev.h"
+//#include "I2Cdev.h"
+
+// // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
+// // is used in I2Cdev.h
 // #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-//     #include "Wire.h"
+#include <Wire.h>
 // #endif
-#include "Wire.h"
-
-
 
 namespace lr {
 namespace Storage {
@@ -45,7 +43,7 @@ bool begin()
 {
     uint8_t result;
 
-    // join I2C bus (I2Cdev library doesn't do this automatically)
+    // // join I2C bus (I2Cdev library doesn't do this automatically)
     // #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
         Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
