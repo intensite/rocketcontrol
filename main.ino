@@ -25,7 +25,6 @@ bool setup_error = false;
 
 Altitude altitude;
 Gyro gyro;
-// LogSystem log2;  //// SD CARD LOG SYSTEM (Not for FRAM)
 bool ledStatus;
 
 // ================================================================
@@ -105,6 +104,8 @@ void debugParachute() {
 }
 
 int8_t persistData() {
+
+    if(MEMORY_CARD_ENABLED == 1)
 
     if(gyro.ypr[1] == 0 || gyro.ypr[2] ==0) {
         // Data invalid do nothing
@@ -186,38 +187,33 @@ void setup() {
     }
 
     //Storage system initialization
-    Serial.println(F("Initialize the log system"));
-    // FRAM LOG SYSTEM
-    if (!lr::Storage::begin()) {
-        Serial.println("Storage Problem");
-        is_abort = true;
-        return;
-    } else {
-        lr::LogSystem::begin(0);  
-        Serial.println("Storage seems OK");
-    }
+    if (MEMORY_CARD_ENABLED == 1) {
+        Serial.println(F("Initialize the log system"));
+        // FRAM LOG SYSTEM
+        if (!lr::Storage::begin()) {
+            Serial.println("Storage Problem");
+            is_abort = true;
+            return;
+        } else {
+            lr::LogSystem::begin(0);  
+            Serial.println("Storage seems OK");
+        }
+        // End of Storage system initialization
 
-    //// SD CARD LOG SYSTEM
-    // if (!log2.begin()) {
-    //     Serial.println(F("Storage Problem"));
-    //     is_abort = true;
-    //     return;
-    // } else {
-    //     Serial.println(F("Storage seems OK"));
-    // }
-
-
-    // End of Storage system initialization
-
-    if (DATA_RECOVERY_MODE == 1) {
-        Serial.println(F("Data recovery mode detected.  Reading memory...."));
-        readData();
-        Serial.println(F("Data recovery completed...."));
-        return;
-    } else {
-        if(FORMAT_MEMORY == 1){
-            Serial.println(F("Erassing memory...."));
-            lr::LogSystem::format();
+        /**********************************************************************************************************
+         * If in DATA_RECOVERY_MODE, the system will read the memory and output its content to the serial console.
+         * The computer will end the program.
+         **/
+        if (DATA_RECOVERY_MODE == 1) {
+            Serial.println(F("Data recovery mode detected.  Reading memory...."));
+            readData();
+            Serial.println(F("Data recovery completed...."));
+            return;
+        } else {
+            if(FORMAT_MEMORY == 1){
+                Serial.println(F("Erassing memory...."));
+                lr::LogSystem::format();
+            }
         }
     }
 
@@ -264,8 +260,10 @@ void heartBeat() {
 void loop() {
 
     // In DATA_RECOVERY_MODE exit the main loop
-    if (DATA_RECOVERY_MODE == 1)
-        return;
+    if (DATA_RECOVERY_MODE == 1) {
+        // Exit the loop 
+        exit(0);  //The 0 is required to prevent compile error.
+    }
 
    unsigned long currentMillis = millis();
     
@@ -291,7 +289,7 @@ void loop() {
 
         // Debug stuff
         if (DEBUG) 
-            displaySensorData();
+            displaySensorData();  // Output sensors data to serial console.  Enabled only in DEBUG Mode to maximize computer performances.
     
         // Persist flight data to memory
         persistData();
