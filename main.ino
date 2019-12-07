@@ -81,9 +81,10 @@ void testSequence() {
 }
 
 void debugParachute() {
-    byte countdown = 10;
+    int countdown = 10;
     // Serial.println("Debug mode. Press any key to deploy parachute....................");
     // while(Serial.available() == 0) { }  // There really is nothing between the {} braces
+    // char x = Serial.read();
 
     while(countdown >=0) {
         delay(1000);
@@ -96,7 +97,6 @@ void debugParachute() {
     buzz(PIEZO_BUZZER, 2637, 1000/12);
     buzz(PIEZO_BUZZER, 2637, 1000/12);
     buzz(PIEZO_BUZZER, 2637, 10000/12);
-    char x = Serial.read();
     deployParachute();
     is_abort = true;
     is_parachute_deployed = true;
@@ -218,7 +218,7 @@ void setup() {
     }
 
     testSequence();
-    //debugParachute();
+    debugParachute();
 }
 
 void heartBeat() {

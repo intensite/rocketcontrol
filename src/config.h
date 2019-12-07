@@ -51,8 +51,8 @@
 #define DEBUG 1                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
 #define BUZZER_ENABLE 0                     // Set to 1 to enable the buzzer. Set to 0 otherwise.
 
-#define MEMORY_CARD_ENABLED 1               // Set to 1 to activate the logging system.  0 to disable it (for testing)
-#define DATA_RECOVERY_MODE 1                // Set to 1 to read collected data from memory: 0 to save data to memory
+#define MEMORY_CARD_ENABLED 0               // Set to 1 to activate the logging system.  0 to disable it (for testing)
+#define DATA_RECOVERY_MODE 0                // Set to 1 to read collected data from memory: 0 to save data to memory
 #define FORMAT_MEMORY 1                     // Set to 1 to erase memory.
 
 #endif // CONFIG_FILE_H
