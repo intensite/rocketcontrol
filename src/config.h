@@ -10,6 +10,7 @@
 #define B_LED A0                            // Analog pin for the Blue LED
 #define G_LED A1                            // Analog pin for the Green LED
 #define PIEZO_BUZZER 9                      // Analog pin for the Green LED
+#define REMOVE_BEFORE_FLIGHT 8              // HIGH IF READY TO FLY. (Pin is configured as INPUT_PULLUP ) 
  
 
 // ALTITUDE & ANGLE VARIABLES
@@ -48,10 +49,10 @@
 #define Y_ACCEL_OFFSETS 97
 #define Z_ACCEL_OFFSETS 1752
 
-#define DEBUG 1                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
+#define DEBUG 0                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
 #define BUZZER_ENABLE 0                     // Set to 1 to enable the buzzer. Set to 0 otherwise.
 
-#define MEMORY_CARD_ENABLED 0               // Set to 1 to activate the logging system.  0 to disable it (for testing)
+#define MEMORY_CARD_ENABLED 1               // Set to 1 to activate the logging system.  0 to disable it (for testing)
 #define DATA_RECOVERY_MODE 0                // Set to 1 to read collected data from memory: 0 to save data to memory
 #define FORMAT_MEMORY 1                     // Set to 1 to erase memory.
 

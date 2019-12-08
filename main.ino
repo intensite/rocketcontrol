@@ -17,6 +17,7 @@ bool is_abort = false;
 bool is_parachute_deployed = false;
 int g_servo_pitch = 0;
 int g_servo_roll = 0;
+byte IS_READY_TO_FLY;   // Used with the REMOVE_BEFORE_FLIGHT jumper
 
 // const long interval = 100;
 unsigned long previousMillis = 0;
@@ -81,6 +82,11 @@ void testSequence() {
 }
 
 void debugParachute() {
+
+    // Disable the test if the REMOVE_BEFORE_FLY jumper is not present 
+    if (IS_READY_TO_FLY == LOW)
+        return;
+
     int countdown = 10;
     // Serial.println("Debug mode. Press any key to deploy parachute....................");
     // while(Serial.available() == 0) { }  // There really is nothing between the {} braces
@@ -105,7 +111,9 @@ void debugParachute() {
 
 int8_t persistData() {
 
-    if(MEMORY_CARD_ENABLED == 1)
+    if(MEMORY_CARD_ENABLED == 0 || IS_READY_TO_FLY == LOW) {
+        return 0;
+    }
 
     if(gyro.ypr[1] == 0 || gyro.ypr[2] ==0) {
         // Data invalid do nothing
@@ -130,7 +138,7 @@ int8_t persistData() {
         Serial.println("Probleme de storrage: verifier memoire pleine");
         return 0;
     } else {
-        Serial.println("Record saved: ");
+        //Serial.println("Record saved: ");
     }
     return 1;
 }
@@ -159,6 +167,15 @@ void setup() {
     pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
     pinMode(PIEZO_BUZZER, OUTPUT);
     pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
+    
+
+    pinMode(REMOVE_BEFORE_FLIGHT, INPUT_PULLUP); // HIGH IF READY TO FLY. Used with Jumper (Pin is configured as INPUT_PULLUP  ) 
+    IS_READY_TO_FLY = digitalRead(REMOVE_BEFORE_FLIGHT); 
+    Serial.println(F("=============================================="));
+    Serial.print(F("IS_READY_TO_FLY: "));
+    Serial.println(IS_READY_TO_FLY);
+    Serial.println(F("=============================================="));
+
 
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
     EIFR = (1 << INTF1);
@@ -218,7 +235,11 @@ void setup() {
     }
 
     testSequence();
-    debugParachute();
+
+    
+    if(DEBUG && IS_READY_TO_FLY) {
+        debugParachute();  // WARNING TEST ONLY! REMOVE THIS LINE BEFORE FLIGHT.
+    }
 }
 
 void heartBeat() {
