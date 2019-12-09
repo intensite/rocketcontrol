@@ -69,24 +69,27 @@ void moveServo(float _ypr[]) {
     pos_1 =(int) (_ypr[1] * 180/M_PI);
     pos_2 =(int) (_ypr[2] * 180/M_PI);
 
-    Input_Pitch = pos_1;
-    Input_Roll = pos_2;
+    Input_Pitch = pos_1 * SERVO_1_ORIENTATION;
+    Input_Roll = pos_2 * SERVO_2_ORIENTATION;
 
     pitchPID.Compute();
     rollPID.Compute();
 
-    // Serial.print("pitchPID I: ");
-    // Serial.print(Input_Pitch);
-    // Serial.print("  O: ");
-    // Serial.print(Output_Pitch);
+    double roll = (Output_Roll + 90 + SERVO_2_OFFSET) ;
+    double pitch =(Output_Pitch + 90 + SERVO_1_OFFSET) ;
 
-    // Serial.print("     ------  rollPID I: ");
-    // Serial.print(Input_Roll);
-    // Serial.print("  O: ");
-    // Serial.println(Output_Roll);
+    Serial.print("pitchPID I: ");
+    Serial.print(Input_Pitch);
+    Serial.print("  O: ");
+    Serial.print(pitch);
 
-    servo_2.write(Output_Roll + 90 + SERVO_2_OFFSET); 
-    servo_1.write(Output_Pitch + 90 +  SERVO_1_OFFSET);  
+    Serial.print("     ------  rollPID I: ");
+    Serial.print(Input_Roll);
+    Serial.print("  O: ");
+    Serial.println(roll);
+
+    servo_2.write(roll); 
+    servo_1.write(pitch);  
 
     g_servo_pitch = (int)Output_Pitch;
     g_servo_roll = (int)Output_Roll;

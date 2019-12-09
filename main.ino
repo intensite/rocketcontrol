@@ -183,25 +183,25 @@ void setup() {
 
     ledStatus = LOW;
 
-    setupServo();
+    // setupServo();
 
-    if (gyro.setupGyro() != 0) {
-        setup_error = true;
-        // LED RED
-        led_color(LED_COLOR_RED);
-        is_abort = true;
-        Serial.println(F("Problem with Gyroscope not detected..."));
-        return;
-    }
+    // if (gyro.setupGyro() != 0) {
+    //     setup_error = true;
+    //     // LED RED
+    //     led_color(LED_COLOR_RED);
+    //     is_abort = true;
+    //     Serial.println(F("Problem with Gyroscope not detected..."));
+    //     return;
+    // }
     
-    if (altitude.setupAlti() !=0) {
-        setup_error = true;
-        // LED RED
-        led_color(LED_COLOR_RED);
-        is_abort = true;
-        Serial.println(F("Problem with altitmeter not detected..."));
-        return;
-    }
+    // if (altitude.setupAlti() !=0) {
+    //     setup_error = true;
+    //     // LED RED
+    //     led_color(LED_COLOR_RED);
+    //     is_abort = true;
+    //     Serial.println(F("Problem with altitmeter not detected..."));
+    //     return;
+    // }
 
     //Storage system initialization
     if (MEMORY_CARD_ENABLED == 1) {
@@ -222,7 +222,7 @@ void setup() {
          * The computer will end the program.
          **/
         if (DATA_RECOVERY_MODE == 1) {
-            Serial.println(F("Data recovery mode detected.  Reading memory...."));
+            //Serial.println(F("Data recovery mode detected.  Reading memory...."));
             readData();
             Serial.println(F("Data recovery completed...."));
             return;
@@ -234,12 +234,12 @@ void setup() {
         }
     }
 
-    testSequence();
+    // testSequence();
 
     
-    if(DEBUG && IS_READY_TO_FLY) {
-        debugParachute();  // WARNING TEST ONLY! REMOVE THIS LINE BEFORE FLIGHT.
-    }
+    // if(DEBUG && IS_READY_TO_FLY) {
+    //     debugParachute();  // WARNING TEST ONLY! REMOVE THIS LINE BEFORE FLIGHT.
+    // }
 }
 
 void heartBeat() {

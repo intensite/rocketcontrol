@@ -23,10 +23,10 @@
 
 
 // SERVO STUFF
-#define SERVO_1_OFFSET 0                    // Used to compensate the servo #1 (Pitch) misalignment
-#define SERVO_2_OFFSET -5                   // Used to compensate the servo #1 (Roll) misalignment
-#define SERVO_1_ORIENTATION 1               // Used to reverse the orientation of the servo #1 (possible values 1, -1) 
-#define SERVO_2_ORIENTATION 1               // Used to reverse the orientation of the servo #2 (possible values 1, -1)
+#define SERVO_1_OFFSET -11                    // Used to compensate the servo #1 (Pitch) misalignment
+#define SERVO_2_OFFSET -2                   // Used to compensate the servo #1 (Roll) misalignment
+#define SERVO_1_ORIENTATION -1               // Used to reverse the orientation of the servo #1 (possible values 1, -1) 
+#define SERVO_2_ORIENTATION -1               // Used to reverse the orientation of the servo #2 (possible values 1, -1)
 
 #define MAX_FINS_TRAVEL 15                  // Used to specify limits of the fins travel in degrees (+/-)
 
@@ -49,12 +49,11 @@
 #define Y_ACCEL_OFFSETS 97
 #define Z_ACCEL_OFFSETS 1752
 
-#define DEBUG 0                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
-#define BUZZER_ENABLE 0                     // Set to 1 to enable the buzzer. Set to 0 otherwise.
-
+#define DEBUG 1                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
+#define BUZZER_ENABLE 1                     // Set to 1 to enable the buzzer. Set to 0 otherwise.
 #define MEMORY_CARD_ENABLED 1               // Set to 1 to activate the logging system.  0 to disable it (for testing)
-#define DATA_RECOVERY_MODE 0                // Set to 1 to read collected data from memory: 0 to save data to memory
-#define FORMAT_MEMORY 1                     // Set to 1 to erase memory.
+#define DATA_RECOVERY_MODE 1                // Set to 1 to read collected data from memory: 0 to save data to memory
+#define FORMAT_MEMORY 0                     // Set to 1 to erase memory.
 
 #endif // CONFIG_FILE_H
 
