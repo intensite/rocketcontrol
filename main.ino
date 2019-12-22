@@ -9,17 +9,21 @@
 #include "src/led_color/led_color.h"
 #include "src/storage/Storage.h"
 #include "src/storage/LogSystem.h"
+// #include "src/storage/LogSystem_SD.h"
+#include "src/parachute/parachute.h"
+#include <Wire.h>
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 bool is_abort = false;
 bool is_parachute_deployed = false;
 int g_servo_pitch = 0;
 int g_servo_roll = 0;
+byte IS_READY_TO_FLY;   // Used with the REMOVE_BEFORE_FLIGHT jumper
 
 // const long interval = 100;
 unsigned long previousMillis = 0;
 unsigned long previousHBeatMillis = 0;
-int setup_error = false;
+bool setup_error = false;
 
 Altitude altitude;
 Gyro gyro;
@@ -28,7 +32,7 @@ bool ledStatus;
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
-#define MPU_INTERRUPT_PIN 3  // use pin 3 as pin 2 interfere with servo.
+#define MPU_INTERRUPT_PIN 33  // use pin 3 as pin 2 interfere with servo.
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -36,26 +40,30 @@ void dmpDataReady() {
 }
  
 
+/*****************************************************************
+ *  Used to display sensor data onthe cosole. Mainly to debug.
+ *  Should no be used durring flight as it disturbs the interupts of the I2C
+ * ***************************************************************/
 void displaySensorData() {
-
+    
         // Debug stuff
-        Serial.print(" Gyro:");
+        Serial.print(F(" Gyro:"));
         Serial.print(gyro.ypr[1] * 180/M_PI);
-        Serial.print(" : ");
-        Serial.println(gyro.ypr[2] * 180/M_PI);
+        Serial.print(F(" : "));
+        Serial.print(gyro.ypr[2] * 180/M_PI);
         
-        Serial.print("Altitude:");
+        Serial.print(F("\t\tAltitude:"));
         Serial.println(altitude.current_altitude);
 } 
 
 
 void testSequence() {
 
-    Serial.println("Begin of tests...........");
-    Serial.println("Testing servos...");
+    Serial.println(F("Begin of tests..........."));
+    Serial.println(F("Testing servos..."));
     testServo();
 
-    Serial.println("Testing LED and Buzzer...");
+    Serial.println(F("Testing LED and Buzzer..."));
 
     // Test LED 
     led_color(LED_COLOR_RED);
@@ -71,10 +79,42 @@ void testSequence() {
     buzz(PIEZO_BUZZER, 3136, 1000/12);
     buzz(PIEZO_BUZZER, 2093, 1000/12);
     buzz(PIEZO_BUZZER, 0, 1000/12);
-    Serial.println("End of tests...........");
+    Serial.println(F("End of tests..........."));
+}
+
+void debugParachute() {
+
+    // Disable the test if the REMOVE_BEFORE_FLY jumper is not present 
+    if (IS_READY_TO_FLY == LOW)
+        return;
+
+    int countdown = 10;
+    // Serial.println("Debug mode. Press any key to deploy parachute....................");
+    // while(Serial.available() == 0) { }  // There really is nothing between the {} braces
+    // char x = Serial.read();
+
+    while(countdown >=0) {
+        delay(1000);
+        buzz(PIEZO_BUZZER, 2637, 1000/12);
+        countdown--;
+    }
+
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 1000/12);
+    buzz(PIEZO_BUZZER, 2637, 10000/12);
+    deployParachute();
+    is_abort = true;
+    is_parachute_deployed = true;
+    return;
 }
 
 int8_t persistData() {
+
+    if(MEMORY_CARD_ENABLED == 0 || IS_READY_TO_FLY == LOW) {
+        return 0;
+    }
 
     if(gyro.ypr[1] == 0 || gyro.ypr[2] ==0) {
         // Data invalid do nothing
@@ -82,6 +122,7 @@ int8_t persistData() {
     }
 
     lr::LogRecord logRecord(
+    // LogRecord logRecord(
         millis(), 
         altitude.current_altitude, 
         (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
@@ -91,26 +132,26 @@ int8_t persistData() {
         is_parachute_deployed, 
         is_abort, 
         altitude.temperature, // Temperature
-        72, // Batt
+        72, // Batt (a faire)
         gyro.z_gforce  // gForces
     );
     if (!lr::LogSystem::appendRecord(logRecord)) {
         Serial.println("Probleme de storrage: verifier memoire pleine");
         return 0;
     } else {
-        Serial.println("Record saved: ");
+        //Serial.println("Record saved: ");
     }
     return 1;
 }
 
 void readData() {
-    int reccount = 0;
-    if (reccount = lr::LogSystem::currentNumberOfRecords()) {
-        for(int i = 0; i < reccount; i++) {
-            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
+    // int reccount = 0;
+    // if (reccount = lr::LogSystem::currentNumberOfRecords()) {
+    //     for(int i = 0; i < reccount; i++) {
+            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(200);
             logRecord.writeToSerial();
-        }
-    }
+    //     }
+    // }
 }
 
 void setup() {
@@ -120,13 +161,22 @@ void setup() {
     g_servo_roll = 0;
 
     // initialize serial communication
-    Serial.begin(38400);  // Reduced the speed as it was crashing the arduino at 115200
+    Serial.begin(115200);  // Reduced the speed as it was crashing the arduino at 115200
     delay(2000);                // waits for two second
     pinMode(R_LED, OUTPUT);     digitalWrite(R_LED, HIGH);
     pinMode(G_LED, OUTPUT);     digitalWrite(G_LED, HIGH);
     pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
     pinMode(PIEZO_BUZZER, OUTPUT);
     pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
+    
+
+    pinMode(REMOVE_BEFORE_FLIGHT, INPUT_PULLUP); // HIGH IF READY TO FLY. Used with Jumper (Pin is configured as INPUT_PULLUP  ) 
+    IS_READY_TO_FLY = digitalRead(REMOVE_BEFORE_FLIGHT); 
+    Serial.println(F("=============================================="));
+    Serial.print(F("IS_READY_TO_FLY: "));
+    Serial.println(IS_READY_TO_FLY);
+    Serial.println(F("=============================================="));
+
 
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
     // EIFR = (1 << INTF1);
@@ -134,50 +184,64 @@ void setup() {
 
     ledStatus = LOW;
 
-    setupServo();
+    // setupServo();
 
     if (gyro.setupGyro() != 0) {
         setup_error = true;
         // LED RED
         led_color(LED_COLOR_RED);
         is_abort = true;
-        Serial.println("Problem with Gyroscope not detected...");
-        return;
+        Serial.println(F("Problem with Gyroscope not detected..."));
+        // return;
     }
-    if (altitude.setupAlti() !=0) {
-        setup_error = true;
-        // LED RED
-        led_color(LED_COLOR_RED);
-        is_abort = true;
-        Serial.println("Problem with altitmeter not detected...");
-        return;
-    }
+    
+    // if (altitude.setupAlti() !=0) {
+    //     setup_error = true;
+    //     // LED RED
+    //     led_color(LED_COLOR_RED);
+    //     is_abort = true;
+    //     Serial.println(F("Problem with altitmeter not detected..."));
+    //     return;
+    // }
 
     //Storage system initialization
-    Serial.println("Initialize the log system");
-    if (!lr::Storage::begin()) {
-        Serial.println("Storage Problem");
-        is_abort = true;
-        return;
-    } else {
-        lr::LogSystem::begin(0);  
-        Serial.println("Storage seems OK");
-    }
-    // End of Storage system initialization
+    if (MEMORY_CARD_ENABLED == 1) {
+        Serial.println(F("Initialize the log system"));
+        // delay(5000);
+        // FRAM LOG SYSTEM
+        if (!lr::Storage::begin()) {
+            Serial.println("Storage Problem");
+            is_abort = true;
+            return;
+        } else {
+            lr::LogSystem::begin(0);  
+            Serial.println("Storage seems OK");
+        }
+        // End of Storage system initialization
 
-    if (DATA_RECOVERY_MODE == 1) {
-        Serial.println("Data recovery mode detected.  Reading memory....");
-        readData();
-        Serial.println("Data recovery completed....");
-        return;
+        /**********************************************************************************************************
+         * If in DATA_RECOVERY_MODE, the system will read the memory and output its content to the serial console.
+         * The computer will end the program.
+         **/
+        if (DATA_RECOVERY_MODE == 1) {
+            //Serial.println(F("Data recovery mode detected.  Reading memory...."));
+            readData();
+            Serial.println(F("Data recovery completed...."));
+            return;
+        } else {
+            // if(FORMAT_MEMORY == 1){
+            //     Serial.println(F("Erassing memory...."));
+            //     lr::LogSystem::format();
+            // }
+        }
     }
 
-    if(FORMAT_MEMORY == 1){
-        Serial.println("Erassing memory....");
-        lr::LogSystem::format();
-    }
+    // testSequence();
 
-    testSequence();
+    
+    // if(DEBUG && IS_READY_TO_FLY) {
+    //     debugParachute();  // WARNING TEST ONLY! REMOVE THIS LINE BEFORE FLIGHT.
+    // }
 }
 
 void heartBeat() {
@@ -211,7 +275,7 @@ void heartBeat() {
             buzz(PIEZO_BUZZER, 2637, 1000/12);
             buzz(PIEZO_BUZZER, 3136, 1000/12);
             buzz(PIEZO_BUZZER, 2093, 1000/12);
-            buzz(PIEZO_BUZZER, 0, 1000/12);
+            // buzz(PIEZO_BUZZER, 0, 1000/12);  // Cause ESP32 to crash (div by zero)
         }
     }
 }
@@ -219,8 +283,10 @@ void heartBeat() {
 void loop() {
 
     // In DATA_RECOVERY_MODE exit the main loop
-    if (DATA_RECOVERY_MODE == 1)
-        return;
+    if (DATA_RECOVERY_MODE == 1) {
+        // Exit the loop 
+        exit(0);  //The 0 is required to prevent compile error.
+    }
 
    unsigned long currentMillis = millis();
     
@@ -245,7 +311,8 @@ void loop() {
         processTrajectory(gyro.ypr);
 
         // Debug stuff
-        // if (DEBUG) { displaySensorData(); }
+        if (DEBUG) 
+            displaySensorData();  // Output sensors data to serial console.  Enabled only in DEBUG Mode to maximize computer performances.
     
         // Persist flight data to memory
         persistData();

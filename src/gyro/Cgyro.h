@@ -1,28 +1,33 @@
 // #include "MPU6050_6Axis_MotionApps20.h"
 // #include "MPU6050.h"
-// #include "I2Cdev.h"
+#include "../lib/I2Cdev.h"
 // #include "helper_3dmath.h"
-#include "MPU6050_6Axis_MotionApps20.h"
+#include "../lib/MPU6050_6Axis_MotionApps20.h"
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
-// #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
      #include "Wire.h"
-// #endif
+#endif
 
 #define OUTPUT_READABLE_YAWPITCHROLL
 //#define OUTPUT_READABLE_REALACCEL
 //#define OUTPUT_READABLE_WORLDACCEL
 
 
-// CALIBRATION CONSTANTS CHANGE TO CALIBRATE
-#define X_GYRO_OFFSETS 5
-#define Y_GYRO_OFFSETS 41
-#define Z_GYRO_OFFSETS 57
-#define X_ACCEL_OFFSETS -1198
-#define Y_ACCEL_OFFSETS 97
-#define Z_ACCEL_OFFSETS 1752
+// ********************************************************
+// * Calibration constants moved to the config file 
+// ********************************************************
+// // CALIBRATION CONSTANTS CHANGE TO CALIBRATE
+// #define X_GYRO_OFFSETS 5
+// #define Y_GYRO_OFFSETS 41
+// #define Z_GYRO_OFFSETS 57
+// #define X_ACCEL_OFFSETS -1198
+// #define Y_ACCEL_OFFSETS 97
+// #define Z_ACCEL_OFFSETS 1752
     
+// #define SDA 23 //0
+// #define SCL 22 //4 
 
 class Gyro {
     private:
@@ -63,14 +68,15 @@ Gyro::Gyro() {};
 uint8_t Gyro::setupGyro() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-        Wire.begin();
-        Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+        // Wire.begin();
+        // Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+        Wire.begin(SDA, SCL, 400000);
     #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
-        Fastwire::setup(400, true);
+        // Fastwire::setup(400, true);
     #endif
 
     // initialize device
-    // Serial.println(F("Initializing I2C devices..."));
+    Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
 
     // verify connection
@@ -94,7 +100,7 @@ uint8_t Gyro::setupGyro() {
         // Calibration Time: generate offsets and calibrate our MPU6050
         mpu.CalibrateAccel(6);
         mpu.CalibrateGyro(6);
-        // mpu.PrintActiveOffsets(); // Disabled in ESP32 version of the library :-(
+        mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
         // Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
@@ -112,6 +118,7 @@ uint8_t Gyro::setupGyro() {
         Serial.print(devStatus);
         Serial.println(F(")"));
     }
+    
     return devStatus;
 }
 
@@ -122,8 +129,8 @@ uint8_t Gyro::setupGyro() {
 void Gyro::ProcessGyroData() {
     // if programming failed, don't try to do anything
     if (!dmpReady) return;
-
     mpuIntStatus = mpu.getIntStatus();
+     
 
     // get current FIFO count
     fifoCount = mpu.getFIFOCount();
@@ -172,11 +179,11 @@ void Gyro::ProcessGyroData() {
             mpu.dmpGetAccel(&aa, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            Serial.print("areal\t");
+            Serial.print(F("areal\t"));
             Serial.print(aaReal.x);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.print(aaReal.y);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.println(aaReal.z);
         #endif
 
@@ -188,11 +195,11 @@ void Gyro::ProcessGyroData() {
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-            Serial.print("aworld\t");
+            Serial.print(F("aworld\t"));
             Serial.print(aaWorld.x);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.print(aaWorld.y);
-            Serial.print("\t");
+            Serial.print(F("\t"));
             Serial.println(aaWorld.z);
         #endif
     

@@ -2,7 +2,7 @@
     "arduino.path": "/opt/arduino-1.8.9",
     "board": "esp32:esp32:featheresp32",
     "output": "../build",
-    "port": "COM3",
+    "port": "COM5",
     "sketch": "main.ino",
     "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none"
 }

@@ -19,15 +19,13 @@
 //
 
 #include "Storage.h"
-// #define I2CDEV_IMPLEMENTATION       I2CDEV_BUILTIN_FASTWIRE
-// // #include <Wire.h>
-// #include "I2Cdev.h"
+//#include "I2Cdev.h"
+
+// // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
+// // is used in I2Cdev.h
 // #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-//     #include "Wire.h"
+#include <Wire.h>
 // #endif
-#include "Wire.h"
-
-
 
 namespace lr {
 namespace Storage {
@@ -45,7 +43,7 @@ bool begin()
 {
     uint8_t result;
 
-    // join I2C bus (I2Cdev library doesn't do this automatically)
+    // // join I2C bus (I2Cdev library doesn't do this automatically)
     // #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
         Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
@@ -66,13 +64,15 @@ bool begin()
     const uint16_t manufacturerID = (id0<<4)+(id1>>4);
     const uint16_t productID = ((id1&0x0f)<<8)+id2;
     
-    // Serial.print(manufacturerID, HEX);
-    // Serial.print(", ");
-    // Serial.println(productID, HEX);
+    Serial.print(manufacturerID, HEX);
+    Serial.print(", ");
+    Serial.println(productID, HEX);
     // Check the both IDs
     if (manufacturerID != 0x00a || productID != 0x510) {
         return false;
     }
+
+    Serial.println("FRAM seems Good!");
     return true;
 }
 
