@@ -73,16 +73,16 @@ void moveServo(float _ypr[]) {
 //ypr[0] * 180/M_PI
 
 
-    int pos_1;
-    int pos_2;
+    int16_t pos_1;
+    int16_t pos_2;
 
     if(_ypr[1] == 0 || _ypr[2] ==0) {
         // Data invalid do nothing
         return;
     }
 
-    pos_1 =(int) (_ypr[1] * 180/M_PI);
-    pos_2 =(int) (_ypr[2] * 180/M_PI);
+    pos_1 =(int16_t) (_ypr[1] * 180/M_PI);
+    pos_2 =(int16_t) (_ypr[2] * 180/M_PI);
 
     Input_Pitch = pos_1;
     Input_Roll = pos_2;
@@ -103,8 +103,8 @@ void moveServo(float _ypr[]) {
     servo_2.write(Output_Roll + 90 + SERVO_2_OFFSET); 
     servo_1.write(Output_Pitch + 90 +  SERVO_1_OFFSET);  
 
-    g_servo_pitch = (int)Output_Pitch;
-    g_servo_roll = (int)Output_Roll;
+    g_servo_pitch = (int16_t)Output_Pitch;
+    g_servo_roll = (int16_t)Output_Roll;
 }
 
 //@TODO: Make a PID control loop

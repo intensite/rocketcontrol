@@ -27,7 +27,7 @@
 
 Altitude::Altitude() {};
 
-int Altitude::setupAlti() {
+int16_t Altitude::setupAlti() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         // Wire.begin();

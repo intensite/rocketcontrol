@@ -13,10 +13,10 @@ class Altitude {
         float previous_altitude;
         bool is_apogee;
         float altitude_max;
-        unsigned long start_descent_timer;
+        uint32_t start_descent_timer;
         float temperature;
 
-        int setupAlti();
+        int16_t setupAlti();
         float processAltiData();
         Altitude();
 };

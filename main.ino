@@ -12,12 +12,13 @@
 // #include "src/storage/LogSystem_SD.h"
 #include "src/parachute/parachute.h"
 #include <Wire.h>
+#include "src/bluetooth/bluetooth.h"
 
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 bool is_abort = false;
 bool is_parachute_deployed = false;
-int g_servo_pitch = 0;
-int g_servo_roll = 0;
+int16_t g_servo_pitch = 0;
+int16_t g_servo_roll = 0;
 byte IS_READY_TO_FLY;   // Used with the REMOVE_BEFORE_FLIGHT jumper
 
 // const long interval = 100;
@@ -88,7 +89,7 @@ void debugParachute() {
     if (IS_READY_TO_FLY == LOW)
         return;
 
-    int countdown = 10;
+    int16_t countdown = 10;
     // Serial.println("Debug mode. Press any key to deploy parachute....................");
     // while(Serial.available() == 0) { }  // There really is nothing between the {} braces
     // char x = Serial.read();
@@ -125,8 +126,8 @@ int8_t persistData() {
     // LogRecord logRecord(
         millis(), 
         altitude.current_altitude, 
-        (int) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
-        (int) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
+        (int16_t) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
+        (int16_t) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
         g_servo_pitch, // Servo Pitch: ToDo
         g_servo_roll, // Servo Roll : ToDo
         is_parachute_deployed, 
@@ -145,9 +146,9 @@ int8_t persistData() {
 }
 
 void readData() {
-    // int reccount = 0;
+    // int16_t reccount = 0;
     // if (reccount = lr::LogSystem::currentNumberOfRecords()) {
-    //     for(int i = 0; i < reccount; i++) {
+    //     for(int16_t i = 0; i < reccount; i++) {
             lr::LogRecord logRecord = lr::LogSystem::getLogRecord(200);
             logRecord.writeToSerial();
     //     }
@@ -183,6 +184,9 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
 
     ledStatus = LOW;
+
+    setupBLE();
+
 
     // setupServo();
 
@@ -315,7 +319,9 @@ void loop() {
             displaySensorData();  // Output sensors data to serial console.  Enabled only in DEBUG Mode to maximize computer performances.
     
         // Persist flight data to memory
-        persistData();
+        // persistData();
+
+        updateBLE(gyro.ypr);
     
         heartBeat();
     }

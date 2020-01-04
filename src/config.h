@@ -13,7 +13,6 @@
 #define REMOVE_BEFORE_FLIGHT 8              // HIGH IF READY TO FLY. (Pin is configured as INPUT_PULLUP ) 
 // #define SDA 23 
 // #define SCL 22 
- 
 
 // ALTITUDE & ANGLE VARIABLES
 #define APOGEE_DIFF_METERS 10               // Used to specify minimum altitude for liftoff and minimum decent for parachute deployment. 

@@ -269,7 +269,7 @@ const unsigned char dmpMemory[MPU6050_DMP_CODE_SIZE] PROGMEM = {
 };
 
 #ifndef MPU6050_DMP_FIFO_RATE_DIVISOR 
-#define MPU6050_DMP_FIFO_RATE_DIVISOR 0x01 // The New instance of the Firmware has this as the default
+#define MPU6050_DMP_FIFO_RATE_DIVISOR 0x00 // The New instance of the Firmware has this as the default
 #endif
 
 // I Simplified this:
