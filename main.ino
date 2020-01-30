@@ -48,13 +48,23 @@ void dmpDataReady() {
 void displaySensorData() {
     
         // Debug stuff
-        Serial.print(F(" Gyro:"));
-        Serial.print(gyro.ypr[1] * 180/M_PI);
-        Serial.print(F(" : "));
-        Serial.print(gyro.ypr[2] * 180/M_PI);
+        // Serial.print(F(" Gyro:"));
+        // Serial.print(gyro.ypr[1] * 180/M_PI);
+        // Serial.print(F(" : "));
+        // Serial.print(gyro.ypr[2] * 180/M_PI);
         
-        Serial.print(F("\t\tAltitude:"));
-        Serial.println(altitude.current_altitude);
+        // Serial.print(F("\t\tAltitude:"));
+        // Serial.println(altitude.current_altitude);
+
+        /* Voltage mesurement */
+        float temp;
+        float voltage = (float)analogRead(A3);// / 4096 * 38.846;
+        // Serial.println(voltage);
+        voltage = (float)(voltage / 4096 * 40.125);
+        temp = (int8_t)(voltage * 10 + .5);
+        Serial.println((float)(temp/10));
+
+
 } 
 
 
