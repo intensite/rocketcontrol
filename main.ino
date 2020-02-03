@@ -33,7 +33,7 @@ bool ledStatus;
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
-#define MPU_INTERRUPT_PIN 33  // use pin 3 as pin 2 interfere with servo.
+#define MPU_INTERRUPT_PIN 35  // use pin 3 as pin 2 interfere with servo.
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -48,21 +48,24 @@ void dmpDataReady() {
 void displaySensorData() {
     
         // Debug stuff
-        // Serial.print(F(" Gyro:"));
-        // Serial.print(gyro.ypr[1] * 180/M_PI);
-        // Serial.print(F(" : "));
-        // Serial.print(gyro.ypr[2] * 180/M_PI);
+        Serial.print(F(" Gyro:"));
+        Serial.print(gyro.ypr[1] * 180/M_PI);
+        Serial.print(F(" : "));
+        Serial.print(gyro.ypr[2] * 180/M_PI);
         
-        // Serial.print(F("\t\tAltitude:"));
-        // Serial.println(altitude.current_altitude);
+        Serial.print(F("\t\tAltitude:"));
+        Serial.print(altitude.current_altitude);
+
+        Serial.print(F("\t\tTemperature:"));
+        Serial.println(altitude.temperature);
 
         /* Voltage mesurement */
-        float temp;
-        float voltage = (float)analogRead(A3);// / 4096 * 38.846;
-        // Serial.println(voltage);
-        voltage = (float)(voltage / 4096 * 40.125);
-        temp = (int8_t)(voltage * 10 + .5);
-        Serial.println((float)(temp/10));
+        // float temp;
+        // float voltage = (float)analogRead(A3);// / 4096 * 38.846;
+        // // Serial.println(voltage);
+        // voltage = (float)(voltage / 4096 * 40.125);
+        // temp = (int8_t)(voltage * 10 + .5);
+        // Serial.println((float)(temp/10));
 
 
 } 
@@ -209,14 +212,14 @@ void setup() {
         // return;
     }
     
-    // if (altitude.setupAlti() !=0) {
-    //     setup_error = true;
-    //     // LED RED
-    //     led_color(LED_COLOR_RED);
-    //     is_abort = true;
-    //     Serial.println(F("Problem with altitmeter not detected..."));
-    //     return;
-    // }
+    if (altitude.setupAlti() !=0) {
+        setup_error = true;
+        // LED RED
+        led_color(LED_COLOR_RED);
+        is_abort = true;
+        Serial.println(F("Problem with altitmeter not detected..."));
+        return;
+    }
 
     //Storage system initialization
     if (MEMORY_CARD_ENABLED == 1) {

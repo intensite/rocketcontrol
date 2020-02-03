@@ -1,8 +1,8 @@
 {
     "arduino.path": "/opt/arduino-1.8.9",
-    "board": "esp32:esp32:featheresp32",
+    "board": "esp32:esp32:esp32",
     "output": "../build",
-    "port": "COM5",
+    "port": "COM4",
     "sketch": "main.ino",
-    "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none"
+    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none"
 }

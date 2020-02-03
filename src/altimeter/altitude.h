@@ -1,11 +1,12 @@
 // #include "I2Cdev.h"
-#include "SparkFunMPL3115A2.h"
-
+// #include "SparkFunMPL3115A2.h"
+// #include "SparkFunBME280.h"
+#include "../lib/SparkFunBME280.h"
 
 
 class Altitude {
     private:
-        MPL3115A2 myPressure;
+        BME280 myPressure;
 
     public:
         float altitude_offset=0;

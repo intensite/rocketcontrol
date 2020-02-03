@@ -11,6 +11,9 @@
 #include "../lib/I2Cdev.h"
 #include "../parachute/parachute.h"
 #include "../global.h"
+#include "../lib/SimpleKalmanFilter.h"
+
+
 
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
@@ -24,6 +27,7 @@
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
+SimpleKalmanFilter pressureKalmanFilter(1, 1, 0.3);
 
 Altitude::Altitude() {};
 
@@ -37,18 +41,32 @@ int16_t Altitude::setupAlti() {
         // Fastwire::setup(400, true);
     #endif
 
+    myPressure.setI2CAddress(0x76); //The default for the SparkFun Environmental Combo board is 0x77 (jumper open).
     altitude_max = 0; previous_altitude = 0; is_apogee = false;
 
-    // initialize device
-    myPressure.begin(); // Get sensor online
-
     //Configure the sensor
-    myPressure.setModeAltimeter(); // Measure altitude above sea level in meters
+    myPressure.setFilter(0);
+    myPressure.setMode(3); //Normal mode
+    myPressure.setStandbyTime(0);
+    myPressure.setPressureOverSample(1);
+    myPressure.setTempOverSample(1);
+    myPressure.setReferencePressure(100000); // Local Atmospheric Pressure  ex: 99,9Kpa
 
-    myPressure.setOversampleRate(7); // Set Oversample to the recommended 128
-    myPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
-    altitude_offset = myPressure.readAltitude();
-    Serial.print(F("Altitude ofset = ")); Serial.println(altitude_offset); 
+    delay(1000);
+    // initialize device
+    myPressure.beginI2C(); // Get sensor online
+
+    temperature = myPressure.readTempC();
+    Serial.println(F("Stabilisation current altitude...."));
+    // The BMx280 'saves' the last reading in memory for you to query. Just read twice in a row and toss out the first reading!
+    for(int8_t i=0; i<20; i++) {
+        temperature = myPressure.readTempC();
+        altitude_offset = myPressure.readFloatAltitudeMeters(); 
+        Serial.print(F("Temperature=")); Serial.print(myPressure.readTempC(), 2);
+        Serial.print(F(" Offset=")); Serial.println(altitude_offset);
+        delay(500);
+    }
+    Serial.print(F("Altitude Offset = ")); Serial.println(altitude_offset); 
     if (altitude_offset == -999) {
         return -999;  // Error out after max of 512ms for a read
     } else {
@@ -61,8 +79,11 @@ int16_t Altitude::setupAlti() {
 float Altitude::processAltiData() {
 
     // Get the current altitude using the altitude_offset
-    current_altitude = myPressure.readAltitude() - altitude_offset;
-    //temperature = myPressure.readTemp();
+    current_altitude = myPressure.readFloatAltitudeMeters() - altitude_offset;
+    current_altitude = pressureKalmanFilter.updateEstimate(current_altitude);
+    // Serial.print(F("current_altitude = ")); Serial.println(current_altitude); 
+
+    temperature = myPressure.readTempC();
     
 
     // Ignore negative altitude

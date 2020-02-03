@@ -5,10 +5,10 @@
 // PIN ASSIGNMENT 
 #define FINS_SERVO_1_PIN 6 
 #define FINS_SERVO_2_PIN 5
-#define PARACHUTE_IGNITER_PIN 2
-#define R_LED A3                            // Analog pin for the Red LED
-#define B_LED A0                            // Analog pin for the Blue LED
-#define G_LED A1                            // Analog pin for the Green LED
+#define PARACHUTE_IGNITER_PIN 32
+#define R_LED 4                            // Analog pin for the Red LED
+#define B_LED 2                            // Analog pin for the Blue LED
+#define G_LED 0                            // Analog pin for the Green LED
 #define PIEZO_BUZZER 9                      // Analog pin for the Green LED
 #define REMOVE_BEFORE_FLIGHT 8              // HIGH IF READY TO FLY. (Pin is configured as INPUT_PULLUP ) 
 // #define SDA 23 
