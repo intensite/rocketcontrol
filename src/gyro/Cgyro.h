@@ -11,7 +11,7 @@
 #endif
 
 #define OUTPUT_READABLE_YAWPITCHROLL
-//#define OUTPUT_READABLE_REALACCEL
+#define OUTPUT_READABLE_REALACCEL
 //#define OUTPUT_READABLE_WORLDACCEL
 
 
@@ -179,12 +179,12 @@ void Gyro::ProcessGyroData() {
             mpu.dmpGetAccel(&aa, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            Serial.print(F("areal\t"));
-            Serial.print(aaReal.x);
-            Serial.print(F("\t"));
-            Serial.print(aaReal.y);
-            Serial.print(F("\t"));
-            Serial.println(aaReal.z);
+            // Serial.print(F("areal\t"));
+            // Serial.print(aaReal.x);
+            // Serial.print(F("\t"));
+            // Serial.print(aaReal.y);
+            // Serial.print(F("\t"));
+            // Serial.println(aaReal.z);
         #endif
 
         #ifdef OUTPUT_READABLE_WORLDACCEL
