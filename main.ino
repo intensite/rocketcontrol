@@ -52,6 +52,8 @@ void displaySensorData() {
         Serial.print(gyro.ypr[1] * 180/M_PI);
         Serial.print(F(" : "));
         Serial.print(gyro.ypr[2] * 180/M_PI);
+        Serial.print(F(" : "));
+        Serial.print(gyro.ypr[0] * 180/M_PI);
         
         Serial.print(F("\t\tAltitude:"));
         Serial.print(altitude.current_altitude);
@@ -89,10 +91,11 @@ void testSequence() {
     led_color(LED_COLOR_OFF);
 
     // Test PIEZO_BUZZER 
-    buzz(PIEZO_BUZZER, 2637, 1000/12);
-    buzz(PIEZO_BUZZER, 3136, 1000/12);
-    buzz(PIEZO_BUZZER, 2093, 1000/12);
-    buzz(PIEZO_BUZZER, 0, 1000/12);
+    const int8_t tone_delay = 83;  //1000/12
+    buzz(PIEZO_BUZZER, 2637, tone_delay);
+    buzz(PIEZO_BUZZER, 3136, tone_delay);
+    buzz(PIEZO_BUZZER, 2093, tone_delay);
+    buzz(PIEZO_BUZZER, 0, tone_delay);
     Serial.println(F("End of tests..........."));
 }
 
@@ -198,6 +201,7 @@ void setup() {
 
     ledStatus = LOW;
 
+    // Setup bluetooth
     setupBLE();
 
 
@@ -253,7 +257,7 @@ void setup() {
         }
     }
 
-    // testSequence();
+    testSequence();
 
     
     // if(DEBUG && IS_READY_TO_FLY) {
@@ -305,7 +309,7 @@ void loop() {
         exit(0);  //The 0 is required to prevent compile error.
     }
 
-   unsigned long currentMillis = millis();
+    unsigned long currentMillis = millis();
     
     // The abort sequence was triggered (throw your arms in the air) exit the main loop
     if (is_abort) {
@@ -329,7 +333,7 @@ void loop() {
 
         // Debug stuff
         if (DEBUG) 
-            displaySensorData();  // Output sensors data to serial console.  Enabled only in DEBUG Mode to maximize computer performances.
+           displaySensorData();  // Output sensors data to serial console.  Enabled only in DEBUG Mode to maximize computer performances.
     
         // Persist flight data to memory
         // persistData();

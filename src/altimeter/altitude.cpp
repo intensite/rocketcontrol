@@ -85,7 +85,6 @@ float Altitude::processAltiData() {
 
     temperature = myPressure.readTempC();
     
-
     // Ignore negative altitude
     if (current_altitude < 0) {
         current_altitude = 0;
