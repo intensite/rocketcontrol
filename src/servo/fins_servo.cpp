@@ -76,13 +76,13 @@ void moveServo(float _ypr[]) {
     int16_t pos_1;
     int16_t pos_2;
 
-    if(_ypr[1] == 0 || _ypr[2] ==0) {
+    if(_ypr[PITCH_AXIS] == 0 || _ypr[YAW_AXIS] ==0) {
         // Data invalid do nothing
         return;
     }
 
-    pos_1 =(int16_t) (_ypr[1] * 180/M_PI);
-    pos_2 =(int16_t) (_ypr[2] * 180/M_PI);
+    pos_1 =(int16_t) (_ypr[PITCH_AXIS] * 180/M_PI);
+    pos_2 =(int16_t) (_ypr[YAW_AXIS] * 180/M_PI);
 
     Input_Pitch = pos_1;
     Input_Roll = pos_2;

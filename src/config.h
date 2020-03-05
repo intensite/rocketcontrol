@@ -10,11 +10,15 @@
 #define B_LED 2                            // Analog pin for the Blue LED
 #define G_LED 0                            // Analog pin for the Green LED
 #define PIEZO_BUZZER 27                      // Analog pin for the Green LED
-#define REMOVE_BEFORE_FLIGHT 8              // HIGH IF READY TO FLY. (Pin is configured as INPUT_PULLUP ) 
+#define REMOVE_BEFORE_FLIGHT 23  // HEADER1  // HIGH IF READY TO FLY. (Pin is configured as INPUT_PULLUP ) 
 // #define SDA 23 
 // #define SCL 22 
 
 // ALTITUDE & ANGLE VARIABLES
+#define PITCH_AXIS 2                        // MPU-6050 Axis when mounted on rocket configuration (Y Axis when flat)
+#define YAW_AXIS 0                          // MPU-6050 Axis when mounted on rocket configuration (Z Axis when flat)
+#define ROLL_AXIS 1                         // MPU-6050 Axis when mounted on rocket configuration (X Axis when flat)
+
 #define APOGEE_DIFF_METERS 10               // Used to specify minimum altitude for liftoff and minimum decent for parachute deployment. 
 #define EXCESSIVE_ANGLE_THRESHOLD 50        // Used to specify maximum angle before abort sequence is initiated.
 #define SCAN_TIME_INTERVAL 100              // Used to specify the refresh rate in mili-seconds of the instruments (altimeter and gyroscope).
@@ -43,17 +47,26 @@
 #define PID_ROLL_Kd 0.5
 
 // CALIBRATION CONSTANTS CHANGE TO CALIBRATE
-#define X_GYRO_OFFSETS 5
-#define Y_GYRO_OFFSETS 41
-#define Z_GYRO_OFFSETS 57
-#define X_ACCEL_OFFSETS -1198
-#define Y_ACCEL_OFFSETS 97
-#define Z_ACCEL_OFFSETS 1752
+// #define X_GYRO_OFFSETS 5
+// #define Y_GYRO_OFFSETS 41
+// #define Z_GYRO_OFFSETS 57
+// #define X_ACCEL_OFFSETS -1198
+// #define Y_ACCEL_OFFSETS 97
+// #define Z_ACCEL_OFFSETS 1752
+
+#define X_GYRO_OFFSETS 24
+#define Y_GYRO_OFFSETS 43
+#define Z_GYRO_OFFSETS 525
+#define X_ACCEL_OFFSETS -1109
+#define Y_ACCEL_OFFSETS 841
+#define Z_ACCEL_OFFSETS 525
+
+
 
 #define DEBUG 1                             // Set to 1 to display debug info to the serial console. Set to 0 otherwise.
 #define BUZZER_ENABLE 0                     // Set to 1 to enable the buzzer. Set to 0 otherwise.
-#define MEMORY_CARD_ENABLED 0               // Set to 1 to activate the logging system.  0 to disable it (for testing)
-#define DATA_RECOVERY_MODE 0                // Set to 1 to read collected data from memory: 0 to save data to memory
+#define MEMORY_CARD_ENABLED 1               // Set to 1 to activate the logging system.  0 to disable it (for testing)
+#define DATA_RECOVERY_MODE 1                // Set to 1 to read collected data from memory: 0 to save data to memory
 #define FORMAT_MEMORY 0                     // Set to 1 to erase memory.
 
 #endif // CONFIG_FILE_H
