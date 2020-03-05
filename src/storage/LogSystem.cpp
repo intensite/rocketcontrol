@@ -161,11 +161,13 @@ inline void setInternalRecord(const InternalLogRecord *record, uint32_t index)
 //
 void zeroInternalRecord(uint32_t index)
 {
-    uint32_t storageIndex = getRecordStart(index);
-    for (uint8_t i = 0; i < sizeof(InternalLogRecord); ++i) {
-        Storage::writeByte(storageIndex, 0);
-        ++storageIndex;
-    }
+    // Commented out as a not applicable to flash
+
+    // uint32_t storageIndex = getRecordStart(index);
+    // for (uint8_t i = 0; i < sizeof(InternalLogRecord); ++i) {
+    //     Storage::writeByte(storageIndex, 0);
+    //     ++storageIndex;
+    // }
 }
     
 
@@ -180,7 +182,8 @@ bool isInternalRecordNull(InternalLogRecord *record)
 {
     uint8_t *recordPtr = reinterpret_cast<uint8_t*>(record);
     for (uint8_t i = 0; i < sizeof(InternalLogRecord); ++i) {
-        if (*recordPtr != 0) {
+        // if (*recordPtr != 0) {
+        if (*recordPtr != 0xFF) {  // In the case of a flash chip the record is empty if all it bytes are set to 0xFF
             return false;
         }
         ++recordPtr;
@@ -243,9 +246,12 @@ void begin(uint32_t reservedForConfig)
     gMaximumNumberOfRecords = (Storage::size() - gReservedForConfig) / sizeof(InternalLogRecord);
     // Serial.println("DEBUG*******Get gMaximumNumberOfRecords *************************");
     // Serial.println(gMaximumNumberOfRecords);
+    // Serial.print("sizeof(InternalLogRecord) : "); Serial.println(sizeof(InternalLogRecord));
+    
     // Scan the storage for valid records.
     uint32_t index = 0;
     InternalLogRecord record = getInternalRecord(index);
+    
     while (!isInternalRecordNull(&record) && index <= gMaximumNumberOfRecords) {
         if (!isInternalRecordValid(&record)) {
             break;
@@ -257,13 +263,17 @@ void begin(uint32_t reservedForConfig)
         Serial.println("############ MEMORY FULL #######################");
     }
 
+    Serial.print("CurrentNumberOfRecords : "); Serial.println(index);
+    
     gCurrentNumberOfRecords = index;
 }
 
 
-LogRecord getLogRecord(uint32_t index)
-{
+LogRecord getLogRecord(uint32_t index) {
+
     if (index >= gCurrentNumberOfRecords) {
+        Serial.println("index is >= gCurrentNumberOfRecords : ");
+        
         return LogRecord();
     }
     const InternalLogRecord record = getInternalRecord(index);
@@ -279,9 +289,9 @@ bool appendRecord(const LogRecord &logRecord)
         return false;
     }
     // zero the following record if possible
-    if (gCurrentNumberOfRecords+1 < gMaximumNumberOfRecords) {
-        zeroInternalRecord(gCurrentNumberOfRecords+1);
-    }
+    // if (gCurrentNumberOfRecords+1 < gMaximumNumberOfRecords) {
+    //     zeroInternalRecord(gCurrentNumberOfRecords+1);
+    // }
     // convert the record into the internal structure.
     InternalLogRecord internalRecord;
     memset(&internalRecord, 0, sizeof(InternalLogRecord));
@@ -296,6 +306,7 @@ bool appendRecord(const LogRecord &logRecord)
     internalRecord.temperature = logRecord._temperature;
     internalRecord.battery = logRecord._battery;
     internalRecord.gForces = logRecord._gForces;
+
     // internalRecord.crc = getCRCForInternalRecord(&internalRecord);
     setInternalRecord(&internalRecord, gCurrentNumberOfRecords);
     gCurrentNumberOfRecords++;
@@ -305,9 +316,11 @@ bool appendRecord(const LogRecord &logRecord)
 
 void format()
 {
-    zeroInternalRecord(0);
-    zeroInternalRecord(1);
+    // zeroInternalRecord(0);
+    // zeroInternalRecord(1);
+    Storage::chipErase();
     gCurrentNumberOfRecords = 0;
+
 }
 
     

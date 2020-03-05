@@ -22,6 +22,8 @@
 
 #include <Arduino.h>
 
+#define CHIP_SELECT   digitalWrite(csPin, LOW);
+#define CHIP_DESELECT digitalWrite(csPin, HIGH);
 
 namespace lr {
 
@@ -70,6 +72,9 @@ void writeByte(uint32_t index, uint8_t data);
 ///
 void writeBytes(uint32_t firstIndex, const uint8_t *data, uint32_t size);
 
+/// erase entire flash memory array
+/// may take several seconds depending on size, but is non blocking
+void chipErase();
 
 }
 }

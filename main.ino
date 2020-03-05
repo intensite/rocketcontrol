@@ -48,12 +48,12 @@ void dmpDataReady() {
 void displaySensorData() {
     
         // Debug stuff
-        Serial.print(F(" Gyro:"));
-        Serial.print(gyro.ypr[1] * 180/M_PI);
-        Serial.print(F(" : "));
-        Serial.print(gyro.ypr[2] * 180/M_PI);
-        Serial.print(F(" : "));
-        Serial.print(gyro.ypr[0] * 180/M_PI);
+        Serial.print(F(" Gyro Pitch: "));
+        Serial.print((int16_t)(gyro.ypr[PITCH_AXIS] * 180/M_PI));
+        Serial.print(F(" Yaw: "));
+        Serial.print((int16_t)(gyro.ypr[YAW_AXIS] * 180/M_PI));
+        Serial.print(F(" Roll: "));
+        Serial.print((int16_t)(gyro.ypr[ROLL_AXIS] * 180/M_PI));
         
         Serial.print(F("\t\tAltitude:"));
         Serial.print(altitude.current_altitude);
@@ -142,8 +142,8 @@ int8_t persistData() {
     // LogRecord logRecord(
         millis(), 
         altitude.current_altitude, 
-        (int16_t) (gyro.ypr[1] * 180/M_PI),  // Pitch: Must be improved
-        (int16_t) (gyro.ypr[2] * 180/M_PI),  // Roll:  Must be improved
+        (int16_t) (gyro.ypr[PITCH_AXIS] * 180/M_PI),  // Pitch: Must be improved
+        (int16_t) (gyro.ypr[ROLL_AXIS] * 180/M_PI),  // Roll:  Must be improved
         g_servo_pitch, // Servo Pitch: ToDo
         g_servo_roll, // Servo Roll : ToDo
         is_parachute_deployed, 
@@ -162,13 +162,18 @@ int8_t persistData() {
 }
 
 void readData() {
-    // int16_t reccount = 0;
-    // if (reccount = lr::LogSystem::currentNumberOfRecords()) {
-    //     for(int16_t i = 0; i < reccount; i++) {
-            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(200);
+    uint32_t reccount = 0;
+    reccount = lr::LogSystem::currentNumberOfRecords();
+    Serial.print("Record Count : "); Serial.println(reccount);
+        
+    if (reccount > 0) {
+        for(uint32_t i = 0; i < reccount; i++) {
+            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
             logRecord.writeToSerial();
-    //     }
-    // }
+        }
+    } else {
+        Serial.println("Nothing to read");
+    }
 }
 
 void setup() {
@@ -202,33 +207,34 @@ void setup() {
     ledStatus = LOW;
 
     // Setup bluetooth
-    setupBLE();
+    // setupBLE();
 
 
     // setupServo();
-
-    if (gyro.setupGyro() != 0) {
-        setup_error = true;
-        // LED RED
-        led_color(LED_COLOR_RED);
-        is_abort = true;
-        Serial.println(F("Problem with Gyroscope not detected..."));
-        // return;
-    }
-    
-    if (altitude.setupAlti() !=0) {
-        setup_error = true;
-        // LED RED
-        led_color(LED_COLOR_RED);
-        is_abort = true;
-        Serial.println(F("Problem with altitmeter not detected..."));
-        return;
+    if (!DATA_RECOVERY_MODE) {
+        if (gyro.setupGyro() != 0) {
+            setup_error = true;
+            // LED RED
+            led_color(LED_COLOR_RED);
+            is_abort = true;
+            Serial.println(F("Problem with Gyroscope not detected..."));
+            // return;
+        }
+        
+        if (altitude.setupAlti() !=0) {
+            setup_error = true;
+            // LED RED
+            led_color(LED_COLOR_RED);
+            is_abort = true;
+            Serial.println(F("Problem with altitmeter not detected..."));
+            return;
+        }
     }
 
     //Storage system initialization
     if (MEMORY_CARD_ENABLED == 1) {
         Serial.println(F("Initialize the log system"));
-        // delay(5000);
+        delay(5000);
         // FRAM LOG SYSTEM
         if (!lr::Storage::begin()) {
             Serial.println("Storage Problem");
@@ -245,15 +251,15 @@ void setup() {
          * The computer will end the program.
          **/
         if (DATA_RECOVERY_MODE == 1) {
-            //Serial.println(F("Data recovery mode detected.  Reading memory...."));
+            Serial.println(F("Data recovery mode detected.  Reading memory...."));
             readData();
             Serial.println(F("Data recovery completed...."));
             return;
         } else {
-            // if(FORMAT_MEMORY == 1){
-            //     Serial.println(F("Erassing memory...."));
-            //     lr::LogSystem::format();
-            // }
+            if(FORMAT_MEMORY == 1){
+                Serial.println(F("**** Erassing memory....This takes a while...."));
+                lr::LogSystem::format();
+            }
         }
     }
 
@@ -306,7 +312,11 @@ void loop() {
     // In DATA_RECOVERY_MODE exit the main loop
     if (DATA_RECOVERY_MODE == 1) {
         // Exit the loop 
-        exit(0);  //The 0 is required to prevent compile error.
+        // exit(0);  //The 0 is required to prevent compile error.
+
+        noInterrupts();
+        while(1) {}
+        // abort();
     }
 
     unsigned long currentMillis = millis();
@@ -336,7 +346,7 @@ void loop() {
            displaySensorData();  // Output sensors data to serial console.  Enabled only in DEBUG Mode to maximize computer performances.
     
         // Persist flight data to memory
-        // persistData();
+        persistData();
 
         updateBLE(gyro.ypr);
     

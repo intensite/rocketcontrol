@@ -10,7 +10,8 @@
                 "/opt/arduino-1.8.9/hardware/arduino/avr/**",
                 "/opt/arduino-1.8.9/tools/**",
                 "D:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
-                "D:\\Program Files (x86)\\Arduino\\tools\\**"
+                "D:\\Program Files (x86)\\Arduino\\tools\\**",
+                "C:\\Users\\stephen\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\1.0.4\\**"
             ],
             "forcedInclude": [],
             "intelliSenseMode": "msvc-x64",
