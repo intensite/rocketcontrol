@@ -3,6 +3,7 @@
 #include "../lib/I2Cdev.h"
 // #include "helper_3dmath.h"
 #include "../lib/MPU6050_6Axis_MotionApps20.h"
+#include "../configuration/configuration.h"
 
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
 // is used in I2Cdev.h
@@ -88,12 +89,12 @@ uint8_t Gyro::setupGyro() {
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset(X_GYRO_OFFSETS);
-    mpu.setYGyroOffset(Y_GYRO_OFFSETS);
-    mpu.setZGyroOffset(Z_GYRO_OFFSETS);
-    mpu.setXAccelOffset(X_ACCEL_OFFSETS); 
-    mpu.setYAccelOffset(Y_ACCEL_OFFSETS); 
-    mpu.setZAccelOffset(Z_ACCEL_OFFSETS); 
+    mpu.setXGyroOffset(_CONF.X_GYRO_OFFSETS);
+    mpu.setYGyroOffset(_CONF.Y_GYRO_OFFSETS);
+    mpu.setZGyroOffset(_CONF.Z_GYRO_OFFSETS);
+    mpu.setXAccelOffset(_CONF.X_ACCEL_OFFSETS); 
+    mpu.setYAccelOffset(_CONF.Y_ACCEL_OFFSETS); 
+    mpu.setZAccelOffset(_CONF.Z_ACCEL_OFFSETS); 
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {

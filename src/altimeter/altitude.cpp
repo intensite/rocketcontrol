@@ -12,6 +12,7 @@
 #include "../parachute/parachute.h"
 #include "../global.h"
 #include "../lib/SimpleKalmanFilter.h"
+#include "../configuration/configuration.h"
 
 
 
@@ -96,10 +97,10 @@ float Altitude::processAltiData() {
     }
 
     // Check if Apogee was reached and beginig descent
-    if(altitude_max > APOGEE_DIFF_METERS) {  // Prevent on the ground and transport accident
-        // if((current_altitude - APOGEE_DIFF_METERS) < altitude_max) {  
+    if(altitude_max > _CONF.APOGEE_DIFF_METERS) {  // Prevent on the ground and transport accident
+        // if((current_altitude - _CONF.APOGEE_DIFF_METERS) < altitude_max) {  
 
-        if((current_altitude < altitude_max) && ((altitude_max - current_altitude) >= APOGEE_DIFF_METERS))  {  
+        if((current_altitude < altitude_max) && ((altitude_max - current_altitude) >= _CONF.APOGEE_DIFF_METERS))  {  
             // Here we should be going down.
             Serial.print(F("Apogee passed. Max altitude: "));
             Serial.println(altitude_max);

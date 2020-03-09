@@ -125,6 +125,14 @@ LogRecord getLogRecord(uint32_t index);
 ///
 bool appendRecord(const LogRecord &logRecord);
 
+
+/// Insert a special (9999) record to the storage.
+///
+/// This function will insert a single record with only 9s to disinguish a separate flight.
+/// It uses appendRecord internally
+///
+bool markBeginingOfDataSet();
+
 /// Format the storage.
 ///
 /// This will set the initial two records of the storage area to zero.

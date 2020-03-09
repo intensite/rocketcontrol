@@ -1,0 +1,37 @@
+{
+    "DEBUG" : 1,
+    "BUZZER_ENABLE": 0,
+    "MEMORY_CARD_ENABLED": 1,
+    "DATA_RECOVERY_MODE": 1,
+    "FORMAT_MEMORY": 0,
+
+    "APOGEE_DIFF_METERS" :10,               
+    "EXCESSIVE_ANGLE_THRESHOLD" :50,        
+    "SCAN_TIME_INTERVAL" :100,              
+    "PARACHUTE_DELAY" :1500,  
+
+    "PITCH_AXIS" : 2,
+    "YAW_AXIS" : 0,
+    "ROLL_AXIS" : 1,
+    
+    "SERVO_1_OFFSET": -11,
+    "SERVO_2_OFFSET": -2,
+    "SERVO_1_ORIENTATION": -1,
+    "SERVO_2_ORIENTATION": -1,
+    "MAX_FINS_TRAVEL": 15,
+
+    "PID_PITCH_Kp": 2,
+    "PID_PITCH_Ki": 0,
+    "PID_PITCH_Kd": 0.5,
+
+    "PID_ROLL_Kp": 2,
+    "PID_ROLL_Ki": 0,
+    "PID_ROLL_Kd": 0.5,
+    
+    "X_GYRO_OFFSETS": 24,
+    "Y_GYRO_OFFSETS": 43,
+    "Z_GYRO_OFFSETS": 525,
+    "X_ACCEL_OFFSETS": -1109,
+    "Y_ACCEL_OFFSETS": 841,
+    "Z_ACCEL_OFFSETS": 525
+}

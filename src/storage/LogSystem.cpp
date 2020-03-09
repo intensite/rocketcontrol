@@ -19,6 +19,7 @@
 //
 #include "LogSystem.h"
 #include "Storage.h"
+#include "../configuration/configuration.h"
 
 // #include <util/crc16.h>
 
@@ -313,6 +314,17 @@ bool appendRecord(const LogRecord &logRecord)
     return true;
 }
 
+/*****************************************************************
+ * Save a distinctive record to mark the start of a flight
+ */
+bool markBeginingOfDataSet() {
+
+    LogRecord logRecord(99999, 99999, 999, 999, 
+                999, 999, false, false, 
+               99, 99, 99);
+
+    return appendRecord(logRecord);
+}
 
 void format()
 {
@@ -332,6 +344,9 @@ uint32_t maximumNumberOfRecords()
     
 uint32_t currentNumberOfRecords()
 {
+    Serial.println("Inside currentNumberOfRecords");
+    Serial.print("Inside currentNumberOfRecords _CONF.DEBUG: "); Serial.println(_CONF.DEBUG);
+    
     return gCurrentNumberOfRecords;
 }
 

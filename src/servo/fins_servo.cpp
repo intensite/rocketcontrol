@@ -1,27 +1,28 @@
 #include "fins_servo.h"
 #include <PID_v1.h>
 #include "../global.h"
+#include "../configuration/configuration.h"
 
 Servo servo_1; 
 Servo servo_2; 
 //Define Variables we'll be connecting to
 double Setpoint_Pitch, Input_Pitch, Output_Pitch, Setpoint_Roll, Input_Roll, Output_Roll;
 
-PID pitchPID(&Input_Pitch, &Output_Pitch, &Setpoint_Pitch, PID_PITCH_Kp, PID_PITCH_Ki, PID_PITCH_Kd, DIRECT);
-PID rollPID(&Input_Roll, &Output_Roll, &Setpoint_Roll, PID_ROLL_Kp, PID_ROLL_Ki, PID_ROLL_Kd, DIRECT);
+PID pitchPID(&Input_Pitch, &Output_Pitch, &Setpoint_Pitch, _CONF.PID_PITCH_Kp, _CONF.PID_PITCH_Ki, _CONF.PID_PITCH_Kd, DIRECT);
+PID rollPID(&Input_Roll, &Output_Roll, &Setpoint_Roll, _CONF.PID_ROLL_Kp, _CONF.PID_ROLL_Ki, _CONF.PID_ROLL_Kd, DIRECT);
 
 void setupServo() {
     servo_1.attach(FINS_SERVO_1_PIN);  // attaches the servo pin
-    servo_1.write(90 + SERVO_1_OFFSET);                  
+    servo_1.write(90 + _CONF.SERVO_1_OFFSET);                  
     servo_2.attach(FINS_SERVO_2_PIN);  // attaches the servo on pin 9 to the servo object
-    servo_2.write(90 + SERVO_2_OFFSET);  
+    servo_2.write(90 + _CONF.SERVO_2_OFFSET);  
 
     Setpoint_Pitch = 0;
     Setpoint_Roll = 0;
 
     //Specify the links and initial tuning parameters
-    pitchPID.SetOutputLimits(MAX_FINS_TRAVEL *-1, MAX_FINS_TRAVEL);
-    rollPID.SetOutputLimits(MAX_FINS_TRAVEL *-1, MAX_FINS_TRAVEL);
+    pitchPID.SetOutputLimits(_CONF.MAX_FINS_TRAVEL *-1, _CONF.MAX_FINS_TRAVEL);
+    rollPID.SetOutputLimits(_CONF.MAX_FINS_TRAVEL *-1, _CONF.MAX_FINS_TRAVEL);
     //turn the PID on
     pitchPID.SetMode(AUTOMATIC);
     rollPID.SetMode(AUTOMATIC);
@@ -76,13 +77,13 @@ void moveServo(float _ypr[]) {
     int16_t pos_1;
     int16_t pos_2;
 
-    if(_ypr[PITCH_AXIS] == 0 || _ypr[YAW_AXIS] ==0) {
+    if(_ypr[_CONF.PITCH_AXIS] == 0 || _ypr[_CONF.YAW_AXIS] ==0) {
         // Data invalid do nothing
         return;
     }
 
-    pos_1 =(int16_t) (_ypr[PITCH_AXIS] * 180/M_PI);
-    pos_2 =(int16_t) (_ypr[YAW_AXIS] * 180/M_PI);
+    pos_1 =(int16_t) (_ypr[_CONF.PITCH_AXIS] * 180/M_PI);
+    pos_2 =(int16_t) (_ypr[_CONF.YAW_AXIS] * 180/M_PI);
 
     Input_Pitch = pos_1;
     Input_Roll = pos_2;
@@ -100,8 +101,8 @@ void moveServo(float _ypr[]) {
     // Serial.print("  O: ");
     // Serial.println(Output_Roll);
 
-    servo_2.write(Output_Roll + 90 + SERVO_2_OFFSET); 
-    servo_1.write(Output_Pitch + 90 +  SERVO_1_OFFSET);  
+    servo_2.write(Output_Roll + 90 + _CONF.SERVO_2_OFFSET); 
+    servo_1.write(Output_Pitch + 90 +  _CONF.SERVO_1_OFFSET);  
 
     g_servo_pitch = (int16_t)Output_Pitch;
     g_servo_roll = (int16_t)Output_Roll;
