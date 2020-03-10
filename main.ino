@@ -14,6 +14,7 @@
 #include "src/parachute/parachute.h"
 #include <Wire.h>
 #include "src/bluetooth/bluetooth.h"
+#include "src/command/command.h"
 
 // Configuration& conf = _CONF; //Configuration::instance();
 
@@ -360,6 +361,8 @@ void loop() {
         updateBLE(gyro.ypr);
     
         heartBeat();
+
+        handleSerial();
     }
    }
 

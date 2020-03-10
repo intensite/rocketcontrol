@@ -47,6 +47,8 @@ Configuration::Configuration() {
     this->X_ACCEL_OFFSETS = -1109;
     this->Y_ACCEL_OFFSETS = 841;
     this->Z_ACCEL_OFFSETS = 525;
+
+
 }
 
 Configuration& Configuration::instance() {
@@ -57,7 +59,12 @@ Configuration& Configuration::instance() {
 
 bool Configuration::readConfig() {
 
-   Serial.println("Reading configuration.....") ;
+   Serial.println("Reading configuration.........................................") ;
+    
+    if (!SPIFFS.begin()) {
+        Serial.println("Failed to mount file system");
+        return false;
+    }
  
     File configFile = SPIFFS.open("/config.json", "r");
     if (!configFile) {
@@ -78,7 +85,7 @@ bool Configuration::readConfig() {
     // buffer to be mutable. If you don't use ArduinoJson, you may as well
     // use configFile.readString instead.
     configFile.readBytes(buf.get(), size);
-    Serial.println(buf.get());
+    Serial.println(buf.get());          // FOR DEBUG ONLY
 
     const size_t capacity = JSON_OBJECT_SIZE(29) + 490;
     DynamicJsonDocument doc(capacity);
