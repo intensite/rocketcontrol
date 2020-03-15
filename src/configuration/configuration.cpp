@@ -85,7 +85,7 @@ bool Configuration::readConfig() {
     // buffer to be mutable. If you don't use ArduinoJson, you may as well
     // use configFile.readString instead.
     configFile.readBytes(buf.get(), size);
-    Serial.println(buf.get());          // FOR DEBUG ONLY
+    // Serial.println(buf.get());          // FOR DEBUG ONLY
 
     const size_t capacity = JSON_OBJECT_SIZE(29) + 490;
     DynamicJsonDocument doc(capacity);

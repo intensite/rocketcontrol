@@ -32,6 +32,7 @@ bool setup_error = false;
 
 Altitude altitude;
 Gyro gyro;
+CliCommand cli;
 bool ledStatus;
 
 // ================================================================
@@ -211,7 +212,7 @@ void setup() {
     ledStatus = LOW;
 
     // Setup bluetooth
-    // setupBLE();
+    setupBLE();
 
 
     // setupServo();
@@ -362,7 +363,8 @@ void loop() {
     
         heartBeat();
 
-        handleSerial();
+        cli.handleSerial();
+
     }
    }
 
