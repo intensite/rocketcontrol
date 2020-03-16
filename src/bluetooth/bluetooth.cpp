@@ -3,7 +3,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include "Arduino.h"
-
+#include "../configuration/configuration.h"
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
@@ -11,6 +11,12 @@
 BLECharacteristic gyroCharacteristic(
   BLEUUID((uint16_t)0x1A00), 
   BLECharacteristic::PROPERTY_READ | 
+  BLECharacteristic::PROPERTY_NOTIFY
+);
+BLECharacteristic sysPrefsCharacteristic(
+  BLEUUID((uint16_t)0x1A01), 
+  BLECharacteristic::PROPERTY_READ | 
+  BLECharacteristic::PROPERTY_WRITE | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
 
@@ -29,6 +35,21 @@ class ServerCallbacks: public BLEServerCallbacks {
     }
 };
 
+class CharacteristicCallbacks: public BLECharacteristicCallbacks {
+     void onWrite(BLECharacteristic *characteristic) {
+          //return the pointer to the register containing the current value of the characteristic
+          std::string rxValue = characteristic->getValue(); 
+          //check if there are data (size greater than zero)
+          if (rxValue.length() > 0) {
+ 
+              for (int i = 0; i < rxValue.length(); i++) {
+                Serial.print(rxValue[i]);
+               }
+               Serial.println();
+          }
+     }//onWrite
+};
+
 void setupBLE() {
    // Create and name the BLE Device
   BLEDevice::init("MORGAN flight computer");
@@ -42,10 +63,13 @@ void setupBLE() {
 
   /* Add a characteristic to the service */
   customService->addCharacteristic(&gyroCharacteristic);  //gyroCharacteristic was defined above
-  // customService->addCharacteristic(&customCharacteristic2);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&sysPrefsCharacteristic);  //customCharacteristic2 was defined above  
 
   /* Add Descriptors to the Characteristic*/
   gyroCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  sysPrefsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+
+  sysPrefsCharacteristic.setCallbacks(new CharacteristicCallbacks());
 
   BLEDescriptor VariableDescriptor(BLEUUID((uint16_t)0x2901));    /*```````````````````````````````````````````````````````````````*/
   VariableDescriptor.setValue("gyro pitch, roll, yaw");           /* Use this format to add a hint for the user. This is optional. */
@@ -67,11 +91,11 @@ void updateBLE(float ypr[3]) {
     float gyro[3];
     char str[25];
     
-    gyro[0] = 0;
-    gyro[1] = (ypr[1] * 180/M_PI);
-    gyro[2] = (ypr[2] * 180/M_PI);
+    gyro[_CONF.YAW_AXIS] = 0;
+    gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
+    gyro[_CONF.PITCH_AXIS] = (ypr[_CONF.PITCH_AXIS] * 180/M_PI);
 
-    sprintf(str, "%.1f|%.1f|%.1f", gyro[0], gyro[1], gyro[2]);
+    sprintf(str, "%.1f|%.1f|%.1f", gyro[_CONF.YAW_AXIS], gyro[_CONF.ROLL_AXIS], gyro[_CONF.PITCH_AXIS]);
 
 
 
@@ -80,6 +104,11 @@ void updateBLE(float ypr[3]) {
       // gyroCharacteristic.setValue(gyro, sizeof(gyro));  // This is a value of a single byte
       gyroCharacteristic.setValue(str);  // This is a value of a single byte
       gyroCharacteristic.notify();  // Notify the client of a change
+
+      
+      sprintf(str, "%d", _CONF.BUZZER_ENABLE);
+      sysPrefsCharacteristic.setValue(str);
+      sysPrefsCharacteristic.notify();  // Notify the client of a change
     }
 }
 
