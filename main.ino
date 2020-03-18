@@ -212,7 +212,7 @@ void setup() {
     ledStatus = LOW;
 
     // Setup bluetooth
-    setupBLE();
+    setupBLE(cli);
 
 
     // setupServo();

@@ -49,7 +49,7 @@ void CliCommand::handleSerial() {
     // Serial.println("End of handleSerial() function...");
 }
 
-void CliCommand::handleReceivedMessage(char* msg)
+void CliCommand::handleReceivedMessage(const char* msg)
 {
     // Serial.println("Serial message received!");
 

@@ -4,6 +4,7 @@
 #include <BLE2902.h>
 #include "Arduino.h"
 #include "../configuration/configuration.h"
+#include "../command/command.h"
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
@@ -22,6 +23,11 @@ BLECharacteristic sysPrefsCharacteristic(
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
+CliCommand clii; // Passed from the setupBLE function to process the received commands
+
+void processCommand(const char* msg) {
+  clii.handleReceivedMessage(msg);
+}
 
 /* This function handles the server callbacks */
 bool deviceConnected = false;
@@ -36,21 +42,43 @@ class ServerCallbacks: public BLEServerCallbacks {
 };
 
 class CharacteristicCallbacks: public BLECharacteristicCallbacks {
+
+      // Define a callback type: a pointer to a function taking no
+      // arguments and returning void.
+      typedef void (*callback_t)(const char*);
+
+    public:
+      CharacteristicCallbacks(callback_t _callback)         
+        // Initialize internal callback with the one given as parameter.
+        : callback(_callback)
+        // empty function body
+        {}
+
      void onWrite(BLECharacteristic *characteristic) {
           //return the pointer to the register containing the current value of the characteristic
           std::string rxValue = characteristic->getValue(); 
           //check if there are data (size greater than zero)
           if (rxValue.length() > 0) {
  
-              for (int i = 0; i < rxValue.length(); i++) {
-                Serial.print(rxValue[i]);
-               }
-               Serial.println();
+              // for (int i = 0; i < rxValue.length(); i++) {
+              //   Serial.print(rxValue[i]);
+              //  }
+              //  Serial.println();
+               Serial.print("Calling CLI.processSetCommand() with : "); Serial.println(rxValue.c_str());
+               callback(rxValue.c_str());
           }
      }//onWrite
+
+     private:
+    // The callback is kept as private internal data.
+    callback_t callback;
 };
 
-void setupBLE() {
+
+void setupBLE(CliCommand& cliPtr) {
+
+  clii = cliPtr; // Get a reference to the main's CLI object to parse the commands received.
+
    // Create and name the BLE Device
   BLEDevice::init("MORGAN flight computer");
 
@@ -69,7 +97,7 @@ void setupBLE() {
   gyroCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   sysPrefsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
 
-  sysPrefsCharacteristic.setCallbacks(new CharacteristicCallbacks());
+  sysPrefsCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
 
   BLEDescriptor VariableDescriptor(BLEUUID((uint16_t)0x2901));    /*```````````````````````````````````````````````````````````````*/
   VariableDescriptor.setValue("gyro pitch, roll, yaw");           /* Use this format to add a hint for the user. This is optional. */
@@ -111,6 +139,8 @@ void updateBLE(float ypr[3]) {
       sysPrefsCharacteristic.notify();  // Notify the client of a change
     }
 }
+
+
 
 
 // public:     // Public for now.  Maybe getter and setters would be more appropriate

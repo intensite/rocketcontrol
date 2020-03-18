@@ -11,11 +11,13 @@ class Configuration {
    Configuration& operator=(const Configuration&);
 public:
 
+    // PREFERENCES
     uint8_t DEBUG; // 1                                          // Set to 1 to read collected data from memory: 0 to save data to memory
     uint8_t BUZZER_ENABLE; // 0                          // Set to 1 to enable the buzzer. Set to 0 otherwise.
     uint8_t MEMORY_CARD_ENABLED; // 1              // Set to 1 to activate the logging system.  0 to disable it (for testing)
     uint8_t DATA_RECOVERY_MODE; // 1                // Set to 1 to read collected data from memory: 0 to save data to memory
     uint8_t FORMAT_MEMORY; // 0                          // Set to 1 to erase memory.
+    
     uint8_t APOGEE_DIFF_METERS; // 10
     uint8_t EXCESSIVE_ANGLE_THRESHOLD;
     uint16_t SCAN_TIME_INTERVAL;
