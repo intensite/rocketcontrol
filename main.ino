@@ -41,7 +41,7 @@ bool ledStatus;
 #define MPU_INTERRUPT_PIN 35  // use pin 3 as pin 2 interfere with servo.
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
-void dmpDataReady() {
+void IRAM_ATTR dmpDataReady() {
     mpuInterrupt = true;
 }
  
@@ -303,6 +303,8 @@ void heartBeat() {
         digitalWrite(R_LED, HIGH); // High == OFF
         digitalWrite(G_LED, ledStatus);
         digitalWrite(B_LED, HIGH); 
+
+        
     }
 
     // Beep sequence

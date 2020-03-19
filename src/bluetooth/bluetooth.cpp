@@ -5,20 +5,30 @@
 #include "Arduino.h"
 #include "../configuration/configuration.h"
 #include "../command/command.h"
+#include "./bluetooth.h"
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
 
-BLECharacteristic gyroCharacteristic(
+// Diagnostics Caracteristic (R/O)
+BLECharacteristic diagCharacteristic(
   BLEUUID((uint16_t)0x1A00), 
   BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
-BLECharacteristic sysPrefsCharacteristic(
-  BLEUUID((uint16_t)0x1A01), 
+// Parameters Caracteristic (R/O)
+BLECharacteristic paramCharacteristic(
+  BLEUUID((uint16_t)0x1A02), 
   BLECharacteristic::PROPERTY_READ | 
-  BLECharacteristic::PROPERTY_WRITE | 
   BLECharacteristic::PROPERTY_NOTIFY
+);
+// Input Commands Caracteristic (W/O)
+BLECharacteristic commandCharacteristic(
+  BLEUUID((uint16_t)0x1A01), 
+  // BLECharacteristic::PROPERTY_READ | 
+  // BLECharacteristic::PROPERTY_WRITE | 
+  // BLECharacteristic::PROPERTY_NOTIFY
+  BLECharacteristic::PROPERTY_WRITE
 );
 
 /* Define the UUID for our Custom Service */
@@ -90,18 +100,21 @@ void setupBLE(CliCommand& cliPtr) {
   BLEService *customService = MyServer->createService(BLEUUID((uint16_t)0x1700)); //  A random ID has been selected
 
   /* Add a characteristic to the service */
-  customService->addCharacteristic(&gyroCharacteristic);  //gyroCharacteristic was defined above
-  customService->addCharacteristic(&sysPrefsCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&diagCharacteristic);  //diagCharacteristic was defined above
+  customService->addCharacteristic(&commandCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&paramCharacteristic);  //customCharacteristic2 was defined above  
 
   /* Add Descriptors to the Characteristic*/
-  gyroCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  sysPrefsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  diagCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  paramCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  // commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
 
-  sysPrefsCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
+  // Callback use to receive commands
+  commandCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
 
   BLEDescriptor VariableDescriptor(BLEUUID((uint16_t)0x2901));    /*```````````````````````````````````````````````````````````````*/
   VariableDescriptor.setValue("gyro pitch, roll, yaw");           /* Use this format to add a hint for the user. This is optional. */
-  gyroCharacteristic.addDescriptor(&VariableDescriptor);          /*```````````````````````````````````````````````````````````````*/
+  diagCharacteristic.addDescriptor(&VariableDescriptor);          /*```````````````````````````````````````````````````````````````*/
 
   /* Configure Advertising with the Services to be advertised */
   MyServer->getAdvertising()->addServiceUUID(serviceID);
@@ -129,16 +142,39 @@ void updateBLE(float ypr[3]) {
 
     if (deviceConnected) {
       /* Set the value */
-      // gyroCharacteristic.setValue(gyro, sizeof(gyro));  // This is a value of a single byte
-      gyroCharacteristic.setValue(str);  // This is a value of a single byte
-      gyroCharacteristic.notify();  // Notify the client of a change
+      // diagCharacteristic.setValue(gyro, sizeof(gyro));  // This is a value of a single byte
+      diagCharacteristic.setValue(str);  // This is a value of a single byte
+      diagCharacteristic.notify();  // Notify the client of a change
 
+      updateBLEparams();
       
-      sprintf(str, "%d", _CONF.BUZZER_ENABLE);
-      sysPrefsCharacteristic.setValue(str);
-      sysPrefsCharacteristic.notify();  // Notify the client of a change
+      // sprintf(str, "%d", _CONF.BUZZER_ENABLE);
+      // commandCharacteristic.setValue(str);
+      // commandCharacteristic.notify();  // Notify the client of a change
     }
 }
+
+/********
+ * BLE paramCharacteristic that can be updated 
+ * on a slower schedule than the main diagnistics one
+ */
+void updateBLEparams() {
+
+    char param_str[20];
+
+    //   // PREFERENCES
+    // uint8_t DEBUG; // 1                                  // Set to 1 to read collected data from memory: 0 to save data to memory
+    // uint8_t BUZZER_ENABLE; // 0                          // Set to 1 to enable the buzzer. Set to 0 otherwise.
+    // uint8_t MEMORY_CARD_ENABLED; // 1                    // Set to 1 to activate the logging system.  0 to disable it (for testing)
+    // uint8_t DATA_RECOVERY_MODE; // 1                     // Set to 1 to read collected data from memory: 0 to save data to memory
+    // uint8_t FORMAT_MEMORY; // 0        
+
+  sprintf(param_str, "%d|%d|%d|%d|%d", _CONF.DEBUG, _CONF.BUZZER_ENABLE, _CONF.MEMORY_CARD_ENABLED, _CONF.DATA_RECOVERY_MODE, _CONF.FORMAT_MEMORY);
+  paramCharacteristic.setValue(param_str);
+  paramCharacteristic.notify();  // Notify the client of a change
+
+}
+
 
 
 
