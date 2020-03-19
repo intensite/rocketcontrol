@@ -156,6 +156,22 @@ void CliCommand::processSetCommand(const char* setting, const char* value) {
         _CONF.DEBUG = atoi(value); 
         Serial.print("_CONF.DEBUG: "); Serial.println(_CONF.DEBUG);    
     } 
+    else if(strcmp(setting, "MEM_ENABLED") == 0) {
+        _CONF.MEMORY_CARD_ENABLED = atoi(value); 
+        Serial.print("_CONF.MEMORY_CARD_ENABLED: "); Serial.println(_CONF.MEMORY_CARD_ENABLED);    
+    } 
+    else if(strcmp(setting, "DATA_MODE") == 0) {
+        _CONF.DATA_RECOVERY_MODE = atoi(value); 
+        Serial.print("_CONF.DATA_RECOVERY_MODE: "); Serial.println(_CONF.DATA_RECOVERY_MODE);    
+    } 
+    else if(strcmp(setting, "FORMAT_MEM") == 0) {
+        _CONF.FORMAT_MEMORY = atoi(value); 
+        Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
+    } 
+
+    if(!_CONF.saveConfig()) {
+        Serial.println("Configuration not saved to memory!!");
+    }
 }
 
     
