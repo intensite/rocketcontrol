@@ -12,10 +12,10 @@ class Configuration {
 public:
 
     // PREFERENCES
-    uint8_t DEBUG; // 1                                          // Set to 1 to read collected data from memory: 0 to save data to memory
+    uint8_t DEBUG; // 1                                  // Set to 1 to read collected data from memory: 0 to save data to memory
     uint8_t BUZZER_ENABLE; // 0                          // Set to 1 to enable the buzzer. Set to 0 otherwise.
-    uint8_t MEMORY_CARD_ENABLED; // 1              // Set to 1 to activate the logging system.  0 to disable it (for testing)
-    uint8_t DATA_RECOVERY_MODE; // 1                // Set to 1 to read collected data from memory: 0 to save data to memory
+    uint8_t MEMORY_CARD_ENABLED; // 1                    // Set to 1 to activate the logging system.  0 to disable it (for testing)
+    uint8_t DATA_RECOVERY_MODE; // 1                     // Set to 1 to read collected data from memory: 0 to save data to memory
     uint8_t FORMAT_MEMORY; // 0                          // Set to 1 to erase memory.
     
     uint8_t APOGEE_DIFF_METERS; // 10
@@ -27,8 +27,12 @@ public:
     uint8_t ROLL_AXIS;
     int8_t SERVO_1_OFFSET;
     int8_t SERVO_2_OFFSET;
+    int8_t SERVO_3_OFFSET;
+    int8_t SERVO_4_OFFSET;
     int8_t SERVO_1_ORIENTATION;
     int8_t SERVO_2_ORIENTATION;
+    int8_t SERVO_3_ORIENTATION;
+    int8_t SERVO_4_ORIENTATION;
     uint8_t MAX_FINS_TRAVEL;
     float PID_PITCH_Kp;
     float PID_PITCH_Ki;
@@ -43,6 +47,9 @@ public:
     int16_t Y_ACCEL_OFFSETS;
     int16_t Z_ACCEL_OFFSETS;
 
+   // TEST RELATED CONSTANTS
+   uint8_t PYRO_CHANNELS_TEST;    // Bit field       8,4,2,1   1=1, 2=2, 3=4, 4=8  1&2=3, etc..
+   
 
 
    //Static member function that returns the instance of the singleton by reference.
