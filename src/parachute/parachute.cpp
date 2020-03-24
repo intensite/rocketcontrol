@@ -6,9 +6,10 @@
 bool deployParachute(void) {
 
 
-    //TODO: Put parachute deployment code here!
+    //TODO: Change parachute deployment logic to use one of the 4 customizable pyro channel 
 
     Serial.println("POP!!  Parachute deployed");
+    
     digitalWrite(PARACHUTE_IGNITER_PIN, true);
     led_color(LED_COLOR_YELLOW);
     return true;

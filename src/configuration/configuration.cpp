@@ -103,8 +103,8 @@ bool Configuration::readConfig() {
     this->DEBUG = doc["DEBUG"]; // 1
     this->BUZZER_ENABLE = doc["BUZZER_ENABLE"]; // 0
     this->MEMORY_CARD_ENABLED = doc["MEMORY_CARD_ENABLED"]; // 1
-    // this->DATA_RECOVERY_MODE = doc["DATA_RECOVERY_MODE"]; // 1
-    this->DATA_RECOVERY_MODE =  0;
+    this->DATA_RECOVERY_MODE = doc["DATA_RECOVERY_MODE"]; // 1
+    // this->DATA_RECOVERY_MODE =  0;
     this->FORMAT_MEMORY = doc["FORMAT_MEMORY"]; // 0
 
     this->SCAN_TIME_INTERVAL = doc["SCAN_TIME_INTERVAL"]; // 100

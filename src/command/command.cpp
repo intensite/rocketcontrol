@@ -1,5 +1,7 @@
 #include "Arduino.h"
 #include "command.h"
+#include "../config.h"
+#include "../buzzer/buzzer.h"
 #include "../configuration/configuration.h"
 #include <SimpleCLI.h>
 
@@ -171,6 +173,14 @@ void CliCommand::processSetCommand(const char* setting, const char* value) {
 
     if(!_CONF.saveConfig()) {
         Serial.println("Configuration not saved to memory!!");
+    } else {
+        // Emit a sound to acknolege the processing of the command
+        //@TODO: Change tune to something different
+            buzz(PIEZO_BUZZER, 1500, 750/12);
+            buzz(PIEZO_BUZZER, 400, 1000/12);
+            // buzz(PIEZO_BUZZER, 2637, 1000/12);
+            // buzz(PIEZO_BUZZER, 2637, 1000/12);
+            // buzz(PIEZO_BUZZER, 2637, 10000/12);
     }
 }
 

@@ -34,6 +34,7 @@ Altitude altitude;
 Gyro gyro;
 CliCommand cli;
 bool ledStatus;
+uint8_t dataModeSinceSetup = 0;
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -176,6 +177,7 @@ void readData() {
             lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
             logRecord.writeToSerial();
         }
+        Serial.print("Ouff I just read xx records : "); Serial.println(reccount);
     } else {
         Serial.println("Nothing to read");
     }
@@ -218,6 +220,7 @@ void setup() {
     // setupServo();
     // if (!DATA_RECOVERY_MODE) {
     if (!_CONF.DATA_RECOVERY_MODE) {
+        dataModeSinceSetup = 0;  // Save that the DATA_RECOVERY_MODE was off on setup
         if (gyro.setupGyro() != 0) {
             setup_error = true;
             // LED RED
@@ -242,7 +245,7 @@ void setup() {
         Serial.println(F("Initialize the log system"));
         Serial.print("_CONF.MEMORY_CARD_ENABLED : "); Serial.println(_CONF.MEMORY_CARD_ENABLED);
         
-        delay(5000);
+        delay(2000);
         // FRAM LOG SYSTEM
         if (!lr::Storage::begin()) {
             Serial.println("Storage Problem");
@@ -260,6 +263,7 @@ void setup() {
          **/
         if (_CONF.DATA_RECOVERY_MODE == 1) {
             Serial.println(F("Data recovery mode detected.  Reading memory...."));
+            dataModeSinceSetup = 1;
             readData();
             Serial.println(F("Data recovery completed...."));
             return;
@@ -267,6 +271,7 @@ void setup() {
             if(_CONF.FORMAT_MEMORY == 1){
                 Serial.println(F("**** Erassing memory....This takes a while...."));
                 lr::LogSystem::format();
+                delay(5000); 
             } else {
                 // Mark the begining of a new flight in memory
                 lr::LogSystem::markBeginingOfDataSet();
@@ -323,7 +328,7 @@ void heartBeat() {
 void loop() {
 
     // In DATA_RECOVERY_MODE exit the main loop
-    if (_CONF.DATA_RECOVERY_MODE == 1) {
+    if (_CONF.DATA_RECOVERY_MODE == 1 && dataModeSinceSetup == 1) {
         // Exit the loop 
         // exit(0);  //The 0 is required to prevent compile error.
 
@@ -361,7 +366,7 @@ void loop() {
         // Persist flight data to memory
         persistData();
 
-        updateBLE(gyro.ypr);
+        updateDiagnostics(gyro.ypr, gyro.aaWorld.x, gyro.aaWorld.y, gyro.aaWorld.z);
     
         heartBeat();
 
