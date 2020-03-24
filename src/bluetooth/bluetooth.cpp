@@ -31,18 +31,18 @@ BLECharacteristic paramCharacteristic(
   BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
-// // Accelerometer Caracteristic (R/O)
-// BLECharacteristic accelsCharacteristic(
-//   BLEUUID((uint16_t)0x1A03), 
-//   BLECharacteristic::PROPERTY_READ | 
-//   BLECharacteristic::PROPERTY_NOTIFY
-// );
-// // Environment Caracteristic (R/O)
-// BLECharacteristic environmentCharacteristic(
-//   BLEUUID((uint16_t)0x1A04), 
-//   BLECharacteristic::PROPERTY_READ | 
-//   BLECharacteristic::PROPERTY_NOTIFY
-// );
+// Accelerometer Caracteristic (R/O)
+BLECharacteristic accelsCharacteristic(
+  BLEUUID((uint16_t)0x1A03), 
+  BLECharacteristic::PROPERTY_READ | 
+  BLECharacteristic::PROPERTY_NOTIFY
+);
+// Environment Caracteristic (R/O)
+BLECharacteristic environmentCharacteristic(
+  BLEUUID((uint16_t)0x1A04), 
+  BLECharacteristic::PROPERTY_READ | 
+  BLECharacteristic::PROPERTY_NOTIFY
+);
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
@@ -110,21 +110,23 @@ void setupBLE(CliCommand& cliPtr) {
   MyServer->setCallbacks(new ServerCallbacks());  // Set the function that handles Server Callbacks
 
   /* Add a service to our server */
-  BLEService *customService = MyServer->createService(BLEUUID((uint16_t)0x1700)); //  A random ID has been selected
+  // Note: The second parameter is the numHandles The maximum number of handles associated with this service. 
+  // The defaut 15 doesn't allow for more that 3 characteristics. 30 seems to work fine.
+  BLEService *customService = MyServer->createService(BLEUUID((uint16_t)0x1700), 30);  
 
   /* Add a characteristic to the service */
   customService->addCharacteristic(&orientationCharacteristic);  //orientationCharacteristic was defined above
   customService->addCharacteristic(&commandCharacteristic);  //customCharacteristic2 was defined above  
   customService->addCharacteristic(&paramCharacteristic);  //customCharacteristic2 was defined above  
-  // customService->addCharacteristic(&accelsCharacteristic);  //customCharacteristic2 was defined above  
-  // customService->addCharacteristic(&environmentCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&accelsCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&environmentCharacteristic);  //customCharacteristic2 was defined above  
 
   /* Add Descriptors to the Characteristic*/
   commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   orientationCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   paramCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  // accelsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  // environmentCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  accelsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  environmentCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
 
   // Callback use to receive commands
   commandCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
@@ -150,7 +152,7 @@ void updateDiagnostics(float ypr[3], int16_t ac_x, int16_t ac_y, int16_t ac_z) {
     if (deviceConnected) {
       updateOrientation(ypr);
       updateBLEparams();
-      //updateAccels(ac_x, ac_y, ac_z);
+      updateAccels(ac_x, ac_y, ac_z);
       //updateEnvironment();
 
     }
@@ -192,24 +194,24 @@ void updateOrientation(float ypr[3]) {
     orientationCharacteristic.notify();  // Notify the client of a change
 }
 
-// void updateAccels(int16_t ac_x, int16_t ac_y, int16_t ac_z) {
-//     char str[22];
+void updateAccels(int16_t ac_x, int16_t ac_y, int16_t ac_z) {
+    char str[22];
     
-//     sprintf(str, "%.1f|%.1f|%.1f", ac_x, ac_y, ac_z);
+    sprintf(str, "%.1f|%.1f|%.1f", ac_x, ac_y, ac_z);
 
-//       /* Set the value */
-//       accelsCharacteristic.setValue(str);  // This is a value of a single byte
-//       accelsCharacteristic.notify();  // Notify the client of a change
-// }
-// void updateEnvironment(int16_t alt, float tempC, float pressure, float voltage) {
-//     char str[22];
+      /* Set the value */
+      accelsCharacteristic.setValue(str);  // This is a value of a single byte
+      accelsCharacteristic.notify();  // Notify the client of a change
+}
+void updateEnvironment(int16_t alt, float tempC, float pressure, float voltage) {
+    char str[22];
     
-//     sprintf(str, "%d|%.1f|%.1f|%.1f", alt, tempC, pressure, voltage);
+    sprintf(str, "%d|%.1f|%.1f|%.1f", alt, tempC, pressure, voltage);
 
-//       /* Set the value */
-//       environmentCharacteristic.setValue(str);  // This is a value of a single byte
-//       environmentCharacteristic.notify();  // Notify the client of a change
-// }
+      /* Set the value */
+      environmentCharacteristic.setValue(str);  // This is a value of a single byte
+      environmentCharacteristic.notify();  // Notify the client of a change
+}
 
 
 
