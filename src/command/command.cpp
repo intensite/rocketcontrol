@@ -1,5 +1,7 @@
 #include "Arduino.h"
 #include "command.h"
+#include "../config.h"
+#include "../buzzer/buzzer.h"
 #include "../configuration/configuration.h"
 #include <SimpleCLI.h>
 
@@ -49,7 +51,7 @@ void CliCommand::handleSerial() {
     // Serial.println("End of handleSerial() function...");
 }
 
-void CliCommand::handleReceivedMessage(char* msg)
+void CliCommand::handleReceivedMessage(const char* msg)
 {
     // Serial.println("Serial message received!");
 
@@ -156,6 +158,30 @@ void CliCommand::processSetCommand(const char* setting, const char* value) {
         _CONF.DEBUG = atoi(value); 
         Serial.print("_CONF.DEBUG: "); Serial.println(_CONF.DEBUG);    
     } 
+    else if(strcmp(setting, "MEM_ENABLED") == 0) {
+        _CONF.MEMORY_CARD_ENABLED = atoi(value); 
+        Serial.print("_CONF.MEMORY_CARD_ENABLED: "); Serial.println(_CONF.MEMORY_CARD_ENABLED);    
+    } 
+    else if(strcmp(setting, "DATA_MODE") == 0) {
+        _CONF.DATA_RECOVERY_MODE = atoi(value); 
+        Serial.print("_CONF.DATA_RECOVERY_MODE: "); Serial.println(_CONF.DATA_RECOVERY_MODE);    
+    } 
+    else if(strcmp(setting, "FORMAT_MEM") == 0) {
+        _CONF.FORMAT_MEMORY = atoi(value); 
+        Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
+    } 
+
+    if(!_CONF.saveConfig()) {
+        Serial.println("Configuration not saved to memory!!");
+    } else {
+        // Emit a sound to acknolege the processing of the command
+        //@TODO: Change tune to something different
+            buzz(PIEZO_BUZZER, 1500, 750/12);
+            buzz(PIEZO_BUZZER, 400, 1000/12);
+            // buzz(PIEZO_BUZZER, 2637, 1000/12);
+            // buzz(PIEZO_BUZZER, 2637, 1000/12);
+            // buzz(PIEZO_BUZZER, 2637, 10000/12);
+    }
 }
 
     

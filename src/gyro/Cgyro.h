@@ -12,8 +12,8 @@
 #endif
 
 #define OUTPUT_READABLE_YAWPITCHROLL
-#define OUTPUT_READABLE_REALACCEL
-//#define OUTPUT_READABLE_WORLDACCEL
+// #define OUTPUT_READABLE_REALACCEL
+#define OUTPUT_READABLE_WORLDACCEL
 
 
 // ********************************************************
@@ -46,11 +46,11 @@ class Gyro {
         Quaternion q;           // [w, x, y, z]         quaternion container
         VectorInt16 aa;         // [x, y, z]            accel sensor measurements
         VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
-        VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
         VectorFloat gravity;    // [x, y, z]            gravity vector
         float euler[3];         // [psi, theta, phi]    Euler angle container
 
     public:
+        VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
         float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
         float z_gforce;
 
@@ -62,7 +62,9 @@ class Gyro {
 };
 
 
-Gyro::Gyro() {};
+Gyro::Gyro() {
+    devStatus = -1;
+};
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
@@ -79,14 +81,24 @@ uint8_t Gyro::setupGyro() {
     // initialize device
     Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
+    uint8_t retries = 0;
 
     // verify connection
     Serial.println(F("Testing device connections..."));
+    while (!mpu.testConnection() && retries < 5) {
+        retries++;
+        delay(500);
+    }
     Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
-
+    
+    retries = 0;
     // load and configure the DMP
-    // Serial.println(F("Initializing DMP..."));
-    devStatus = mpu.dmpInitialize();
+    Serial.println(F("Initializing DMP..."));
+    while (devStatus !=0 && retries < 5) {
+        devStatus = mpu.dmpInitialize();
+        retries++;
+        delay(500);
+    }
 
     // supply your own gyro offsets here, scaled for min sensitivity
     mpu.setXGyroOffset(_CONF.X_GYRO_OFFSETS);
@@ -196,12 +208,12 @@ void Gyro::ProcessGyroData() {
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-            Serial.print(F("aworld\t"));
-            Serial.print(aaWorld.x);
-            Serial.print(F("\t"));
-            Serial.print(aaWorld.y);
-            Serial.print(F("\t"));
-            Serial.println(aaWorld.z);
+            // Serial.print(F("aworld\t"));
+            // Serial.print(aaWorld.x);
+            // Serial.print(F("\t"));
+            // Serial.print(aaWorld.y);
+            // Serial.print(F("\t"));
+            // Serial.println(aaWorld.z);
         #endif
     
         

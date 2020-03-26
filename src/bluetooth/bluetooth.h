@@ -1,2 +1,7 @@
-void setupBLE(); 
-void updateBLE(float ypr[3]);
+#include "../command/command.h"
+void setupBLE(CliCommand& cliPtr); 
+// void updateDiagnostics(float ypr[3], int16_t ac_x, int16_t ac_y, int16_t ac_z);
+void updateDiagnostics(float ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z, float& alti, float& temp, float& pressure, float& humidity, float& voltage);
+void updateBLEparams();
+void updateOrientation(float ypr[3]);
+void updateAccels(int16_t ac_x, int16_t ac_y, int16_t ac_z);

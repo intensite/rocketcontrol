@@ -1,3 +1,6 @@
+#ifndef __command_h__
+#define __command_h__
+
 #include <SimpleCLI.h>
 
 class CliCommand {
@@ -5,11 +8,13 @@ class CliCommand {
         SimpleCLI cli;
         Command cmdGet;
         Command cmdSet;
-        void handleReceivedMessage(char* msg);
 
     public:
         CliCommand();
+        void handleReceivedMessage(const char* msg);
         void handleSerial();
         void processGetCommand(const char*);
         void processSetCommand(const char* setting, const char* value);
 };
+
+#endif

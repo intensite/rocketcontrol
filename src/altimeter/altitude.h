@@ -16,6 +16,8 @@ class Altitude {
         float altitude_max;
         uint32_t start_descent_timer;
         float temperature;
+        float pressure;
+        float humidity;
 
         int16_t setupAlti();
         float processAltiData();

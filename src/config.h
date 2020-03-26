@@ -20,6 +20,8 @@
 #define PIEZO_BUZZER 27                    // Analog pin for the Green LED
 #define REMOVE_BEFORE_FLIGHT 23            // HEADER1  // HIGH IF READY TO FLY. (Pin is configured as INPUT_PULLUP ) 
 #define HEADER1 23                         // HEADER1  
+#define VOLTAGE 34                         // VOLTAGE  
+
 
 // #define SDA 21 
 // #define SCL 22 

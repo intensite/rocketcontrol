@@ -85,6 +85,8 @@ float Altitude::processAltiData() {
     // Serial.print(F("current_altitude = ")); Serial.println(current_altitude); 
 
     temperature = myPressure.readTempC();
+    pressure = myPressure.readFloatPressure() / 1000;
+    humidity = myPressure.readFloatHumidity();
     
     // Ignore negative altitude
     if (current_altitude < 0) {

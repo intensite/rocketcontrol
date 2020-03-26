@@ -4,24 +4,53 @@
 #include <BLE2902.h>
 #include "Arduino.h"
 #include "../configuration/configuration.h"
+#include "../command/command.h"
+#include "./bluetooth.h"
+//#include "helper_3dmath.h"
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
 
-BLECharacteristic gyroCharacteristic(
+// Input Commands Caracteristic (W/O)  Command input
+BLECharacteristic commandCharacteristic(
+  BLEUUID((uint16_t)0x1A01), 
+  // BLECharacteristic::PROPERTY_READ | 
+  // BLECharacteristic::PROPERTY_WRITE | 
+  BLECharacteristic::PROPERTY_WRITE |
+  BLECharacteristic::PROPERTY_NOTIFY
+);
+// Diagnostics Caracteristic (R/O)  Page Diagnostiques
+BLECharacteristic diagCharacteristic(
   BLEUUID((uint16_t)0x1A00), 
   BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
-BLECharacteristic sysPrefsCharacteristic(
-  BLEUUID((uint16_t)0x1A01), 
+// Parameters Caracteristic (R/O)  Page preferences
+BLECharacteristic paramCharacteristic(
+  BLEUUID((uint16_t)0x1A02), 
   BLECharacteristic::PROPERTY_READ | 
-  BLECharacteristic::PROPERTY_WRITE | 
+  BLECharacteristic::PROPERTY_NOTIFY
+);
+// Accelerometer Caracteristic (R/O)
+BLECharacteristic accelsCharacteristic(
+  BLEUUID((uint16_t)0x1A03), 
+  BLECharacteristic::PROPERTY_READ | 
+  BLECharacteristic::PROPERTY_NOTIFY
+);
+// Environment Caracteristic (R/O)
+BLECharacteristic environmentCharacteristic(
+  BLEUUID((uint16_t)0x1A04), 
+  BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
+CliCommand clii; // Passed from the setupBLE function to process the received commands
+
+void processCommand(const char* msg) {
+  clii.handleReceivedMessage(msg);
+}
 
 /* This function handles the server callbacks */
 bool deviceConnected = false;
@@ -36,44 +65,76 @@ class ServerCallbacks: public BLEServerCallbacks {
 };
 
 class CharacteristicCallbacks: public BLECharacteristicCallbacks {
+
+      // Define a callback type: a pointer to a function taking no
+      // arguments and returning void.
+      typedef void (*callback_t)(const char*);
+
+    public:
+      CharacteristicCallbacks(callback_t _callback)         
+        // Initialize internal callback with the one given as parameter.
+        : callback(_callback)
+        // empty function body
+        {}
+
      void onWrite(BLECharacteristic *characteristic) {
           //return the pointer to the register containing the current value of the characteristic
           std::string rxValue = characteristic->getValue(); 
           //check if there are data (size greater than zero)
           if (rxValue.length() > 0) {
  
-              for (int i = 0; i < rxValue.length(); i++) {
-                Serial.print(rxValue[i]);
-               }
-               Serial.println();
+              // for (int i = 0; i < rxValue.length(); i++) {
+              //   Serial.print(rxValue[i]);
+              //  }
+              //  Serial.println();
+               Serial.print("Calling CLI.processSetCommand() with : "); Serial.println(rxValue.c_str());
+               callback(rxValue.c_str());
           }
      }//onWrite
+
+     private:
+    // The callback is kept as private internal data.
+    callback_t callback;
 };
 
-void setupBLE() {
+
+void setupBLE(CliCommand& cliPtr) {
+
+  clii = cliPtr; // Get a reference to the main's CLI object to parse the commands received.
+
    // Create and name the BLE Device
   BLEDevice::init("MORGAN flight computer");
+  BLEDevice::setMTU(100);
 
   /* Create the BLE Server */
   BLEServer *MyServer = BLEDevice::createServer();
   MyServer->setCallbacks(new ServerCallbacks());  // Set the function that handles Server Callbacks
 
   /* Add a service to our server */
-  BLEService *customService = MyServer->createService(BLEUUID((uint16_t)0x1700)); //  A random ID has been selected
+  // Note: The second parameter is the numHandles The maximum number of handles associated with this service. 
+  // The defaut 15 doesn't allow for more that 3 characteristics. 30 seems to work fine.
+  BLEService *customService = MyServer->createService(BLEUUID((uint16_t)0x1700), 30 , 0);  
 
   /* Add a characteristic to the service */
-  customService->addCharacteristic(&gyroCharacteristic);  //gyroCharacteristic was defined above
-  customService->addCharacteristic(&sysPrefsCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&diagCharacteristic);  //diagCharacteristic was defined above
+  customService->addCharacteristic(&commandCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&paramCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&accelsCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&environmentCharacteristic);  //customCharacteristic2 was defined above  
 
   /* Add Descriptors to the Characteristic*/
-  gyroCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  sysPrefsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  diagCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  paramCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  accelsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  environmentCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
 
-  sysPrefsCharacteristic.setCallbacks(new CharacteristicCallbacks());
+  // Callback use to receive commands
+  commandCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
 
   BLEDescriptor VariableDescriptor(BLEUUID((uint16_t)0x2901));    /*```````````````````````````````````````````````````````````````*/
   VariableDescriptor.setValue("gyro pitch, roll, yaw");           /* Use this format to add a hint for the user. This is optional. */
-  gyroCharacteristic.addDescriptor(&VariableDescriptor);          /*```````````````````````````````````````````````````````````````*/
+  diagCharacteristic.addDescriptor(&VariableDescriptor);          /*```````````````````````````````````````````````````````````````*/
 
   /* Configure Advertising with the Services to be advertised */
   MyServer->getAdvertising()->addServiceUUID(serviceID);
@@ -87,9 +148,58 @@ void setupBLE() {
   Serial.println(F("Waiting for a Client to connect..."));
 }
 
-void updateBLE(float ypr[3]) {
+void updateDiagnostics(float ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z, float& alti, float& temp, float& pressure, float& humidity,float& voltage) {
+
+    if (deviceConnected) {
+
     float gyro[3];
-    char str[25];
+    char str[80];
+    
+    gyro[_CONF.YAW_AXIS] = (ypr[_CONF.YAW_AXIS] * 180/M_PI);
+    gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
+    gyro[_CONF.PITCH_AXIS] = (ypr[_CONF.PITCH_AXIS] * 180/M_PI);
+
+    sprintf(str, "%.1f|%.1f|%.1f|%d|%d|%d|%.2f|%.2f|%.2f|%.2f|%.2f", 
+              gyro[_CONF.YAW_AXIS], gyro[_CONF.ROLL_AXIS], gyro[_CONF.PITCH_AXIS],
+              ac_x, ac_y, ac_z,
+              alti, temp, pressure, humidity, voltage);
+
+    /* Set the value */
+    diagCharacteristic.setValue(str);  // This is a value of a single byte
+    diagCharacteristic.notify();  // Notify the client of a change
+
+      // updateOrientation(ypr);
+      updateBLEparams();
+      // updateAccels(ac_x, ac_y, ac_z);
+      //updateEnvironment();
+
+    }
+}
+
+/********
+ * BLE paramCharacteristic that can be updated 
+ * on a slower schedule than the main diagnistics one
+ */
+void updateBLEparams() {
+
+    char param_str[20];
+
+    //   // PREFERENCES
+    // uint8_t DEBUG; // 1                                  // Set to 1 to read collected data from memory: 0 to save data to memory
+    // uint8_t BUZZER_ENABLE; // 0                          // Set to 1 to enable the buzzer. Set to 0 otherwise.
+    // uint8_t MEMORY_CARD_ENABLED; // 1                    // Set to 1 to activate the logging system.  0 to disable it (for testing)
+    // uint8_t DATA_RECOVERY_MODE; // 1                     // Set to 1 to read collected data from memory: 0 to save data to memory
+    // uint8_t FORMAT_MEMORY; // 0        
+
+  sprintf(param_str, "%d|%d|%d|%d|%d", _CONF.DEBUG, _CONF.BUZZER_ENABLE, _CONF.MEMORY_CARD_ENABLED, _CONF.DATA_RECOVERY_MODE, _CONF.FORMAT_MEMORY);
+  paramCharacteristic.setValue(param_str);
+  paramCharacteristic.notify();  // Notify the client of a change
+
+}
+
+void updateOrientation(float ypr[3]) {
+    float gyro[3];
+    char str[20];
     
     gyro[_CONF.YAW_AXIS] = 0;
     gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
@@ -97,20 +207,32 @@ void updateBLE(float ypr[3]) {
 
     sprintf(str, "%.1f|%.1f|%.1f", gyro[_CONF.YAW_AXIS], gyro[_CONF.ROLL_AXIS], gyro[_CONF.PITCH_AXIS]);
 
-
-
-    if (deviceConnected) {
-      /* Set the value */
-      // gyroCharacteristic.setValue(gyro, sizeof(gyro));  // This is a value of a single byte
-      gyroCharacteristic.setValue(str);  // This is a value of a single byte
-      gyroCharacteristic.notify();  // Notify the client of a change
-
-      
-      sprintf(str, "%d", _CONF.BUZZER_ENABLE);
-      sysPrefsCharacteristic.setValue(str);
-      sysPrefsCharacteristic.notify();  // Notify the client of a change
-    }
+    /* Set the value */
+    diagCharacteristic.setValue(str);  // This is a value of a single byte
+    diagCharacteristic.notify();  // Notify the client of a change
 }
+
+void updateAccels(int16_t ac_x, int16_t ac_y, int16_t ac_z) {
+    char str[60];
+    
+    sprintf(str, "%.1f|%.1f|%.1f", ac_x, ac_y, ac_z);
+
+      /* Set the value */
+      accelsCharacteristic.setValue(str);  // This is a value of a single byte
+      accelsCharacteristic.notify();  // Notify the client of a change
+}
+// void updateEnvironment(int16_t alt, float tempC, float pressure, float voltage) {
+//     char str[20];
+    
+//     sprintf(str, "%d|%.1f|%.1f|%.1f", alt, tempC, pressure, voltage);
+
+//       /* Set the value */
+//       // environmentCharacteristic.setValue("Hi, I am trying to send a string over 20 bytes to Android");  // This is a value of a single byte
+//       environmentCharacteristic.setValue(str);  // This is a value of a single byte
+//       environmentCharacteristic.notify();  // Notify the client of a change
+// }
+
+
 
 
 // public:     // Public for now.  Maybe getter and setters would be more appropriate
