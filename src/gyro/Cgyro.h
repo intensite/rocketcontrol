@@ -62,7 +62,9 @@ class Gyro {
 };
 
 
-Gyro::Gyro() {};
+Gyro::Gyro() {
+    devStatus = -1;
+};
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
@@ -79,14 +81,24 @@ uint8_t Gyro::setupGyro() {
     // initialize device
     Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
+    uint8_t retries = 0;
 
     // verify connection
     Serial.println(F("Testing device connections..."));
+    while (!mpu.testConnection() && retries < 5) {
+        retries++;
+        delay(500);
+    }
     Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
-
+    
+    retries = 0;
     // load and configure the DMP
-    // Serial.println(F("Initializing DMP..."));
-    devStatus = mpu.dmpInitialize();
+    Serial.println(F("Initializing DMP..."));
+    while (devStatus !=0 && retries < 5) {
+        devStatus = mpu.dmpInitialize();
+        retries++;
+        delay(500);
+    }
 
     // supply your own gyro offsets here, scaled for min sensitivity
     mpu.setXGyroOffset(_CONF.X_GYRO_OFFSETS);
