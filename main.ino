@@ -15,6 +15,8 @@
 #include <Wire.h>
 #include "src/bluetooth/bluetooth.h"
 #include "src/command/command.h"
+#include "src/lib/TaskScheduler.h"
+// #include <BluetoothSerial.h>   // Very usefull to debug when battery powered.
 
 // Configuration& conf = _CONF; //Configuration::instance();
 
@@ -32,9 +34,24 @@ bool setup_error = false;
 
 Altitude altitude;
 Gyro gyro;
+float voltage = 0;
 CliCommand cli;
 bool ledStatus;
 uint8_t dataModeSinceSetup = 0;
+// Scheduler
+Scheduler ts;
+
+// BluetoothSerial SerialBT;
+
+// Tasks definition
+void flashLEDcb();
+void beepSequencecb();
+void updateBLEparams_cb();
+void measureVoltage_cb();
+Task tflashLED ( 1 * TASK_SECOND, -1, &flashLEDcb, &ts, true );
+Task tbeepSequence ( 2 * TASK_SECOND, -1, &beepSequencecb, &ts, true );
+Task tMeasureVoltage ( 10 * TASK_SECOND, -1, &measureVoltage_cb, &ts, true );
+Task tupdateBLEparams ( 200 * TASK_MILLISECOND, -1, &updateBLEparams_cb, &ts, true );
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -67,9 +84,9 @@ void displaySensorData() {
         Serial.print(F("\t\tTemperature:"));
         Serial.println(altitude.temperature);
 
-        /* Voltage mesurement */
+        // /* Voltage mesurement */
         // float temp;
-        // float voltage = (float)analogRead(A3);// / 4096 * 38.846;
+        // voltage = (float)analogRead(A3);// / 4096 * 38.846;
         // // Serial.println(voltage);
         // voltage = (float)(voltage / 4096 * 40.125);
         // temp = (int8_t)(voltage * 10 + .5);
@@ -216,7 +233,6 @@ void setup() {
     // Setup bluetooth
     setupBLE(cli);
 
-
     // setupServo();
     // if (!DATA_RECOVERY_MODE) {
     if (!_CONF.DATA_RECOVERY_MODE) {
@@ -227,9 +243,10 @@ void setup() {
             led_color(LED_COLOR_RED);
             is_abort = true;
             Serial.println(F("Problem with Gyroscope not detected..."));
-            // return;
+            return;
         }
-        
+        //  SerialBT.println("Alright!! Gyroscope detected...");
+
         if (altitude.setupAlti() !=0) {
             setup_error = true;
             // LED RED
@@ -239,7 +256,6 @@ void setup() {
             return;
         }
     }
-
     //Storage system initialization
     if (_CONF.MEMORY_CARD_ENABLED == 1) {
         Serial.println(F("Initialize the log system"));
@@ -298,31 +314,31 @@ void heartBeat() {
         return;
     }
 
-    // Flash Green LED every seconds
-    if (currentHBeatMillis - previousHBeatMillis >= 1000) {
-        if(ledStatus == LOW) {
-            ledStatus = HIGH;
-        } else {
-            ledStatus = LOW;
-        }
-        digitalWrite(R_LED, HIGH); // High == OFF
-        digitalWrite(G_LED, ledStatus);
-        digitalWrite(B_LED, HIGH); 
+    // Execute the tasks
+    ts.execute();
+    // // Flash Green LED every seconds
+    // if (currentHBeatMillis - previousHBeatMillis >= 1000) {
+    //     if(ledStatus == LOW) {
+    //         ledStatus = HIGH;
+    //     } else {
+    //         ledStatus = LOW;
+    //     }
+    //     digitalWrite(R_LED, HIGH); // High == OFF
+    //     digitalWrite(G_LED, ledStatus);
+    //     digitalWrite(B_LED, HIGH); 
+    // }
 
-        
-    }
+    // // Beep sequence
+    // if (currentHBeatMillis - previousHBeatMillis >= 2000) {
+    //     previousHBeatMillis = currentHBeatMillis;
 
-    // Beep sequence
-    if (currentHBeatMillis - previousHBeatMillis >= 2000) {
-        previousHBeatMillis = currentHBeatMillis;
-
-        if(_CONF.BUZZER_ENABLE) {
-            buzz(PIEZO_BUZZER, 2637, 1000/12);
-            buzz(PIEZO_BUZZER, 3136, 1000/12);
-            buzz(PIEZO_BUZZER, 2093, 1000/12);
-            // buzz(PIEZO_BUZZER, 0, 1000/12);  // Cause ESP32 to crash (div by zero)
-        }
-    }
+    //     if(_CONF.BUZZER_ENABLE) {
+    //         buzz(PIEZO_BUZZER, 2637, 1000/12);
+    //         buzz(PIEZO_BUZZER, 3136, 1000/12);
+    //         buzz(PIEZO_BUZZER, 2093, 1000/12);
+    //         // buzz(PIEZO_BUZZER, 0, 1000/12);  // Cause ESP32 to crash (div by zero)
+    //     }
+    // }
 }
 
 void loop() {
@@ -330,8 +346,6 @@ void loop() {
     // In DATA_RECOVERY_MODE exit the main loop
     if (_CONF.DATA_RECOVERY_MODE == 1 && dataModeSinceSetup == 1) {
         // Exit the loop 
-        // exit(0);  //The 0 is required to prevent compile error.
-
         noInterrupts();
         while(1) {}
         // abort();
@@ -340,9 +354,10 @@ void loop() {
     unsigned long currentMillis = millis();
     
     // The abort sequence was triggered (throw your arms in the air) exit the main loop
-    if (is_abort) {
-        return;
-    }
+    // if (is_abort) {
+    //     SerialBT.println("is_abort == true");
+    //     return;
+    // }
 
     // Some data from the Gyroscope is ready to be processed
     if(mpuInterrupt) {
@@ -366,12 +381,52 @@ void loop() {
         // Persist flight data to memory
         persistData();
 
-        updateDiagnostics(gyro.ypr, gyro.aaWorld.x, gyro.aaWorld.y, gyro.aaWorld.z);
-    
+        
+        // updateDiagnostics(float& ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z, float& alti, float& temp, float& pressure, float& voltage)
         heartBeat();
 
         cli.handleSerial();
-
     }
    }
 
+void flashLEDcb() {
+
+    // Called by task tflashLED
+    // Flash Green LED every seconds
+    if(ledStatus == LOW) {
+        ledStatus = HIGH;
+    } else {
+        ledStatus = LOW;
+    }
+    digitalWrite(R_LED, HIGH); // High == OFF
+    digitalWrite(G_LED, ledStatus);
+    digitalWrite(B_LED, HIGH); 
+
+}
+
+void beepSequencecb() {
+    // Called by task tbeepSequence
+    if(_CONF.BUZZER_ENABLE) {
+        buzz(PIEZO_BUZZER, 2637, 1000/12);
+        buzz(PIEZO_BUZZER, 3136, 1000/12);
+        buzz(PIEZO_BUZZER, 2093, 1000/12);
+    }   
+}
+
+void updateBLEparams_cb() {
+    // Called by task updateBLEparams_cb
+    updateDiagnostics(gyro.ypr, gyro.aaWorld.x, gyro.aaWorld.y, gyro.aaWorld.z, altitude.current_altitude, altitude.temperature, 
+            altitude.pressure, altitude.humidity, voltage);
+}
+
+void measureVoltage_cb() {
+        /* Voltage mesurement */
+        float temp;
+        voltage = (float)analogRead(VOLTAGE);// / 4096 * 38.846;
+        // Serial.println(voltage);
+        voltage = (float)(voltage / 4096 * 44.5);
+
+        // Debug
+        temp = (int8_t)(voltage * 10 + .5);
+        Serial.print("Voltage: "); Serial.println((float)(temp/10));
+}
