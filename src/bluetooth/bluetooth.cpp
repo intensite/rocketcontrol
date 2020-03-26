@@ -20,7 +20,7 @@ BLECharacteristic commandCharacteristic(
   BLECharacteristic::PROPERTY_NOTIFY
 );
 // Diagnostics Caracteristic (R/O)  Page Diagnostiques
-BLECharacteristic orientationCharacteristic(
+BLECharacteristic diagCharacteristic(
   BLEUUID((uint16_t)0x1A00), 
   BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
@@ -104,6 +104,7 @@ void setupBLE(CliCommand& cliPtr) {
 
    // Create and name the BLE Device
   BLEDevice::init("MORGAN flight computer");
+  BLEDevice::setMTU(100);
 
   /* Create the BLE Server */
   BLEServer *MyServer = BLEDevice::createServer();
@@ -112,10 +113,10 @@ void setupBLE(CliCommand& cliPtr) {
   /* Add a service to our server */
   // Note: The second parameter is the numHandles The maximum number of handles associated with this service. 
   // The defaut 15 doesn't allow for more that 3 characteristics. 30 seems to work fine.
-  BLEService *customService = MyServer->createService(BLEUUID((uint16_t)0x1700), 30);  
+  BLEService *customService = MyServer->createService(BLEUUID((uint16_t)0x1700), 30 , 0);  
 
   /* Add a characteristic to the service */
-  customService->addCharacteristic(&orientationCharacteristic);  //orientationCharacteristic was defined above
+  customService->addCharacteristic(&diagCharacteristic);  //diagCharacteristic was defined above
   customService->addCharacteristic(&commandCharacteristic);  //customCharacteristic2 was defined above  
   customService->addCharacteristic(&paramCharacteristic);  //customCharacteristic2 was defined above  
   customService->addCharacteristic(&accelsCharacteristic);  //customCharacteristic2 was defined above  
@@ -123,7 +124,7 @@ void setupBLE(CliCommand& cliPtr) {
 
   /* Add Descriptors to the Characteristic*/
   commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  orientationCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  diagCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   paramCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   accelsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   environmentCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
@@ -133,7 +134,7 @@ void setupBLE(CliCommand& cliPtr) {
 
   BLEDescriptor VariableDescriptor(BLEUUID((uint16_t)0x2901));    /*```````````````````````````````````````````````````````````````*/
   VariableDescriptor.setValue("gyro pitch, roll, yaw");           /* Use this format to add a hint for the user. This is optional. */
-  orientationCharacteristic.addDescriptor(&VariableDescriptor);          /*```````````````````````````````````````````````````````````````*/
+  diagCharacteristic.addDescriptor(&VariableDescriptor);          /*```````````````````````````````````````````````````````````````*/
 
   /* Configure Advertising with the Services to be advertised */
   MyServer->getAdvertising()->addServiceUUID(serviceID);
@@ -147,12 +148,29 @@ void setupBLE(CliCommand& cliPtr) {
   Serial.println(F("Waiting for a Client to connect..."));
 }
 
-void updateDiagnostics(float ypr[3], int16_t ac_x, int16_t ac_y, int16_t ac_z) {
+void updateDiagnostics(float ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z, float& alti, float& temp, float& pressure, float& humidity,float& voltage) {
 
     if (deviceConnected) {
-      updateOrientation(ypr);
+
+    float gyro[3];
+    char str[80];
+    
+    gyro[_CONF.YAW_AXIS] = (ypr[_CONF.YAW_AXIS] * 180/M_PI);
+    gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
+    gyro[_CONF.PITCH_AXIS] = (ypr[_CONF.PITCH_AXIS] * 180/M_PI);
+
+    sprintf(str, "%.1f|%.1f|%.1f|%d|%d|%d|%.2f|%.2f|%.2f|%.2f|%.2f", 
+              gyro[_CONF.YAW_AXIS], gyro[_CONF.ROLL_AXIS], gyro[_CONF.PITCH_AXIS],
+              ac_x, ac_y, ac_z,
+              alti, temp, pressure, humidity, voltage);
+
+    /* Set the value */
+    diagCharacteristic.setValue(str);  // This is a value of a single byte
+    diagCharacteristic.notify();  // Notify the client of a change
+
+      // updateOrientation(ypr);
       updateBLEparams();
-      updateAccels(ac_x, ac_y, ac_z);
+      // updateAccels(ac_x, ac_y, ac_z);
       //updateEnvironment();
 
     }
@@ -181,7 +199,7 @@ void updateBLEparams() {
 
 void updateOrientation(float ypr[3]) {
     float gyro[3];
-    char str[22];
+    char str[20];
     
     gyro[_CONF.YAW_AXIS] = 0;
     gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
@@ -190,12 +208,12 @@ void updateOrientation(float ypr[3]) {
     sprintf(str, "%.1f|%.1f|%.1f", gyro[_CONF.YAW_AXIS], gyro[_CONF.ROLL_AXIS], gyro[_CONF.PITCH_AXIS]);
 
     /* Set the value */
-    orientationCharacteristic.setValue(str);  // This is a value of a single byte
-    orientationCharacteristic.notify();  // Notify the client of a change
+    diagCharacteristic.setValue(str);  // This is a value of a single byte
+    diagCharacteristic.notify();  // Notify the client of a change
 }
 
 void updateAccels(int16_t ac_x, int16_t ac_y, int16_t ac_z) {
-    char str[22];
+    char str[60];
     
     sprintf(str, "%.1f|%.1f|%.1f", ac_x, ac_y, ac_z);
 
@@ -203,15 +221,16 @@ void updateAccels(int16_t ac_x, int16_t ac_y, int16_t ac_z) {
       accelsCharacteristic.setValue(str);  // This is a value of a single byte
       accelsCharacteristic.notify();  // Notify the client of a change
 }
-void updateEnvironment(int16_t alt, float tempC, float pressure, float voltage) {
-    char str[22];
+// void updateEnvironment(int16_t alt, float tempC, float pressure, float voltage) {
+//     char str[20];
     
-    sprintf(str, "%d|%.1f|%.1f|%.1f", alt, tempC, pressure, voltage);
+//     sprintf(str, "%d|%.1f|%.1f|%.1f", alt, tempC, pressure, voltage);
 
-      /* Set the value */
-      environmentCharacteristic.setValue(str);  // This is a value of a single byte
-      environmentCharacteristic.notify();  // Notify the client of a change
-}
+//       /* Set the value */
+//       // environmentCharacteristic.setValue("Hi, I am trying to send a string over 20 bytes to Android");  // This is a value of a single byte
+//       environmentCharacteristic.setValue(str);  // This is a value of a single byte
+//       environmentCharacteristic.notify();  // Notify the client of a change
+// }
 
 
 
