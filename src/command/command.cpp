@@ -2,6 +2,7 @@
 #include "command.h"
 #include "../config.h"
 #include "../buzzer/buzzer.h"
+#include "../parachute/parachute.h"
 #include "../configuration/configuration.h"
 #include <SimpleCLI.h>
 
@@ -170,6 +171,15 @@ void CliCommand::processSetCommand(const char* setting, const char* value) {
         _CONF.FORMAT_MEMORY = atoi(value); 
         Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
     } 
+    else if(strcmp(setting, "SCAN_TIME_INTERVAL") == 0) {
+        _CONF.FORMAT_MEMORY = atoi(value); 
+        Serial.print("_CONF.SCAN_TIME_INTERVAL: "); Serial.println(_CONF.SCAN_TIME_INTERVAL);    
+    } 
+    else if(strcmp(setting, "FIRE_PYRO") == 0) {
+        uint8_t channel = atoi(value);
+        activatePyro(channel);
+    } 
+    
 
     if(!_CONF.saveConfig()) {
         Serial.println("Configuration not saved to memory!!");

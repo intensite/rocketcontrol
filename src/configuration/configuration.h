@@ -17,11 +17,21 @@ public:
     uint8_t MEMORY_CARD_ENABLED; // 1                    // Set to 1 to activate the logging system.  0 to disable it (for testing)
     uint8_t DATA_RECOVERY_MODE; // 1                     // Set to 1 to read collected data from memory: 0 to save data to memory
     uint8_t FORMAT_MEMORY; // 0                          // Set to 1 to erase memory.
+    uint16_t SCAN_TIME_INTERVAL; // 100                  // Speed of the control loop. Interval for sensors reading.
     
-    uint8_t APOGEE_DIFF_METERS; // 10
-    uint8_t EXCESSIVE_ANGLE_THRESHOLD;
-    uint16_t SCAN_TIME_INTERVAL;
+    // PYRO CONTROL
+    uint8_t APOGEE_DIFF_METERS; // 10                    // Difference in meters from the appogee should trigger the pyrochanel (To prevent false appogee detection).
     uint16_t PARACHUTE_DELAY;
+    uint8_t PYRO_ACTIVATION_DELAY; // 15                 // Time in seconds durring which the pyrochanel will stay on after being fired
+    uint16_t PYRO_1_FIRE_ALTITUDE;   // -1               // Altitude (in meters) (could be the appogee) at which the pyro chanel should be fired -1 for appogee 0 to disable.
+    uint16_t PYRO_2_FIRE_ALTITUDE;   // 0                // Altitude (in meters) (could be the appogee) at which the pyro chanel should be fired -1 for appogee 0 to disable.
+    uint16_t PYRO_3_FIRE_ALTITUDE;   // 0                // Altitude (in meters) (could be the appogee) at which the pyro chanel should be fired -1 for appogee 0 to disable.
+    uint16_t PYRO_4_FIRE_ALTITUDE;   // 0                // Altitude (in meters) (could be the appogee) at which the pyro chanel should be fired -1 for appogee 0 to disable.
+    uint8_t AUTOMATIC_ANGLE_ABORT;   // 0                // Enable:1 or disable:0 the automatic excessive angle abort feature.
+    uint8_t EXCESSIVE_ANGLE_THRESHOLD; //0               // Excessive angle threshhold for automatic abort sequence.
+    uint8_t EXCESSIVE_ANGLE_TIME; //0                    // Time (in millisec) delay at Excessive angle condition after which automatic abort sequence will be triggered.
+
+
     uint8_t PITCH_AXIS;
     uint8_t YAW_AXIS;
     uint8_t ROLL_AXIS;

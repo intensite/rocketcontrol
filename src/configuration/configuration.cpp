@@ -18,11 +18,21 @@ Configuration::Configuration() {
     this->MEMORY_CARD_ENABLED = 1;
     this->DATA_RECOVERY_MODE = 0;
     this->FORMAT_MEMORY = 0;
-
     this->SCAN_TIME_INTERVAL = 100;
+
+
+    // PYRO CONTROL
     this->APOGEE_DIFF_METERS = 10;
-    this->EXCESSIVE_ANGLE_THRESHOLD = 50;
     this->PARACHUTE_DELAY = 1500;
+    this->PYRO_ACTIVATION_DELAY = 15;
+    this->PYRO_1_FIRE_ALTITUDE = -1;
+    this->PYRO_2_FIRE_ALTITUDE = 0;
+    this->PYRO_3_FIRE_ALTITUDE = 0;
+    this->PYRO_4_FIRE_ALTITUDE = 0;
+    this->AUTOMATIC_ANGLE_ABORT = 0;
+    this->EXCESSIVE_ANGLE_THRESHOLD = 50;
+    this->EXCESSIVE_ANGLE_TIME = 500;
+
 
     this->PITCH_AXIS = 2;
     this->YAW_AXIS = 0;
@@ -104,13 +114,20 @@ bool Configuration::readConfig() {
     this->BUZZER_ENABLE = doc["BUZZER_ENABLE"]; // 0
     this->MEMORY_CARD_ENABLED = doc["MEMORY_CARD_ENABLED"]; // 1
     this->DATA_RECOVERY_MODE = doc["DATA_RECOVERY_MODE"]; // 1
-    // this->DATA_RECOVERY_MODE =  0;
     this->FORMAT_MEMORY = doc["FORMAT_MEMORY"]; // 0
-
     this->SCAN_TIME_INTERVAL = doc["SCAN_TIME_INTERVAL"]; // 100
+
+    // PYRO CONTROL
     this->APOGEE_DIFF_METERS = doc["APOGEE_DIFF_METERS"]; // 10
-    this->EXCESSIVE_ANGLE_THRESHOLD = doc["EXCESSIVE_ANGLE_THRESHOLD"]; // 50
-    this->PARACHUTE_DELAY = doc["PARACHUTE_DELAY"]; // 1500
+    this->PARACHUTE_DELAY = doc["PARACHUTE_DELAY"];
+    this->PYRO_ACTIVATION_DELAY =      doc["PYRO_ACTIVATION_DELAY"];
+    this->PYRO_1_FIRE_ALTITUDE = doc["PYRO_1_FIRE_ALTITUDE"];
+    this->PYRO_2_FIRE_ALTITUDE = doc["PYRO_2_FIRE_ALTITUDE"];
+    this->PYRO_3_FIRE_ALTITUDE = doc["PYRO_3_FIRE_ALTITUDE"];
+    this->PYRO_4_FIRE_ALTITUDE = doc["PYRO_4_FIRE_ALTITUDE"];
+    this->AUTOMATIC_ANGLE_ABORT = doc["AUTOMATIC_ANGLE_ABORT"];
+    this->EXCESSIVE_ANGLE_THRESHOLD = doc["EXCESSIVE_ANGLE_THRESHOLD"];
+    this->EXCESSIVE_ANGLE_TIME = doc["EXCESSIVE_ANGLE_TIME"];
 
     this->PITCH_AXIS = doc["PITCH_AXIS"]; // 2
     this->YAW_AXIS = doc["YAW_AXIS"]; // 0
@@ -156,16 +173,25 @@ int Configuration::saveConfig() {
     const size_t capacity = JSON_OBJECT_SIZE(29) + 490;
     DynamicJsonDocument doc(capacity);
 
+    // PREFERENCES
     doc["DEBUG"] = this->DEBUG;
     doc["BUZZER_ENABLE"] = this->BUZZER_ENABLE;
     doc["MEMORY_CARD_ENABLED"] = this->MEMORY_CARD_ENABLED;
     doc["DATA_RECOVERY_MODE"] = this->DATA_RECOVERY_MODE;
     doc["FORMAT_MEMORY"] = this->FORMAT_MEMORY;
-
     doc["SCAN_TIME_INTERVAL"] = this->SCAN_TIME_INTERVAL;
+
+    // PYRO CONTROL
     doc["APOGEE_DIFF_METERS"] = this->APOGEE_DIFF_METERS;
-    doc["EXCESSIVE_ANGLE_THRESHOLD"] = this->EXCESSIVE_ANGLE_THRESHOLD;
     doc["PARACHUTE_DELAY"] = this->PARACHUTE_DELAY;
+    doc["PYRO_ACTIVATION_DELAY"] = this->PYRO_ACTIVATION_DELAY;
+    doc["PYRO_1_FIRE_ALTITUDE"] = this->PYRO_1_FIRE_ALTITUDE;
+    doc["PYRO_2_FIRE_ALTITUDE"] = this->PYRO_2_FIRE_ALTITUDE;
+    doc["PYRO_3_FIRE_ALTITUDE"] = this->PYRO_3_FIRE_ALTITUDE;
+    doc["PYRO_4_FIRE_ALTITUDE"] = this->PYRO_4_FIRE_ALTITUDE;
+    doc["AUTOMATIC_ANGLE_ABORT"] = this->AUTOMATIC_ANGLE_ABORT;
+    doc["EXCESSIVE_ANGLE_THRESHOLD"] = this->EXCESSIVE_ANGLE_THRESHOLD;
+    doc["EXCESSIVE_ANGLE_TIME"] = this->EXCESSIVE_ANGLE_TIME;
 
     doc["PITCH_AXIS"] = this->PITCH_AXIS;
     doc["YAW_AXIS"] = this->YAW_AXIS;
