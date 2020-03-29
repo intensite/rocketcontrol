@@ -32,17 +32,17 @@ BLECharacteristic paramCharacteristic(
   BLECharacteristic::PROPERTY_NOTIFY
 );
 // Accelerometer Caracteristic (R/O)
-BLECharacteristic accelsCharacteristic(
+BLECharacteristic pyroCharacteristic(
   BLEUUID((uint16_t)0x1A03), 
   BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
-// Environment Caracteristic (R/O)
-BLECharacteristic environmentCharacteristic(
-  BLEUUID((uint16_t)0x1A04), 
-  BLECharacteristic::PROPERTY_READ | 
-  BLECharacteristic::PROPERTY_NOTIFY
-);
+// // Environment Caracteristic (R/O)
+// BLECharacteristic environmentCharacteristic(
+//   BLEUUID((uint16_t)0x1A04), 
+//   BLECharacteristic::PROPERTY_READ | 
+//   BLECharacteristic::PROPERTY_NOTIFY
+// );
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
@@ -117,17 +117,17 @@ void setupBLE(CliCommand& cliPtr) {
 
   /* Add a characteristic to the service */
   customService->addCharacteristic(&diagCharacteristic);  //diagCharacteristic was defined above
-  customService->addCharacteristic(&commandCharacteristic);  //customCharacteristic2 was defined above  
-  customService->addCharacteristic(&paramCharacteristic);  //customCharacteristic2 was defined above  
-  customService->addCharacteristic(&accelsCharacteristic);  //customCharacteristic2 was defined above  
-  customService->addCharacteristic(&environmentCharacteristic);  //customCharacteristic2 was defined above  
+  customService->addCharacteristic(&commandCharacteristic);  
+  customService->addCharacteristic(&paramCharacteristic);  
+  customService->addCharacteristic(&pyroCharacteristic);  
+  // customService->addCharacteristic(&environmentCharacteristic);  
 
   /* Add Descriptors to the Characteristic*/
   commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   diagCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   paramCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  accelsCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  environmentCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  pyroCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  // environmentCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
 
   // Callback use to receive commands
   commandCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
@@ -169,7 +169,7 @@ void updateDiagnostics(float ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z
     diagCharacteristic.notify();  // Notify the client of a change
 
       // updateOrientation(ypr);
-      updateBLEparams();
+      // updateBLEparams();
       // updateAccels(ac_x, ac_y, ac_z);
       //updateEnvironment();
 
@@ -181,56 +181,35 @@ void updateDiagnostics(float ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z
  * on a slower schedule than the main diagnistics one
  */
 void updateBLEparams() {
+  if (deviceConnected) {
+    updatePrefs();
+    updatePyros();
+  }
+}
+
+
+void updatePrefs() {
 
     char param_str[20];
 
-    //   // PREFERENCES
-    // uint8_t DEBUG; // 1                                  // Set to 1 to read collected data from memory: 0 to save data to memory
-    // uint8_t BUZZER_ENABLE; // 0                          // Set to 1 to enable the buzzer. Set to 0 otherwise.
-    // uint8_t MEMORY_CARD_ENABLED; // 1                    // Set to 1 to activate the logging system.  0 to disable it (for testing)
-    // uint8_t DATA_RECOVERY_MODE; // 1                     // Set to 1 to read collected data from memory: 0 to save data to memory
-    // uint8_t FORMAT_MEMORY; // 0        
-
-  sprintf(param_str, "%d|%d|%d|%d|%d", _CONF.DEBUG, _CONF.BUZZER_ENABLE, _CONF.MEMORY_CARD_ENABLED, _CONF.DATA_RECOVERY_MODE, _CONF.FORMAT_MEMORY);
+  sprintf(param_str, "%d|%d|%d|%d|%d|%d", _CONF.DEBUG, _CONF.BUZZER_ENABLE, _CONF.MEMORY_CARD_ENABLED, _CONF.DATA_RECOVERY_MODE, _CONF.FORMAT_MEMORY, _CONF.SCAN_TIME_INTERVAL);
   paramCharacteristic.setValue(param_str);
   paramCharacteristic.notify();  // Notify the client of a change
 
 }
 
-void updateOrientation(float ypr[3]) {
-    float gyro[3];
-    char str[20];
+void updatePyros() {
+    char str[40];
     
-    gyro[_CONF.YAW_AXIS] = 0;
-    gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
-    gyro[_CONF.PITCH_AXIS] = (ypr[_CONF.PITCH_AXIS] * 180/M_PI);
-
-    sprintf(str, "%.1f|%.1f|%.1f", gyro[_CONF.YAW_AXIS], gyro[_CONF.ROLL_AXIS], gyro[_CONF.PITCH_AXIS]);
+    sprintf(str, "%d|%d|%d|%d|%d|%d|%d|%d|%d|%d", _CONF.APOGEE_DIFF_METERS, _CONF.PARACHUTE_DELAY, _CONF.PYRO_ACTIVATION_DELAY,
+            _CONF.PYRO_1_FIRE_ALTITUDE, _CONF.PYRO_2_FIRE_ALTITUDE, _CONF.PYRO_3_FIRE_ALTITUDE,_CONF.PYRO_4_FIRE_ALTITUDE,
+            _CONF.AUTOMATIC_ANGLE_ABORT, _CONF.EXCESSIVE_ANGLE_THRESHOLD, _CONF.EXCESSIVE_ANGLE_TIME );
 
     /* Set the value */
-    diagCharacteristic.setValue(str);  // This is a value of a single byte
-    diagCharacteristic.notify();  // Notify the client of a change
+    pyroCharacteristic.setValue(str);  // This is a value of a single byte
+    pyroCharacteristic.notify();  // Notify the client of a change
 }
 
-void updateAccels(int16_t ac_x, int16_t ac_y, int16_t ac_z) {
-    char str[60];
-    
-    sprintf(str, "%.1f|%.1f|%.1f", ac_x, ac_y, ac_z);
-
-      /* Set the value */
-      accelsCharacteristic.setValue(str);  // This is a value of a single byte
-      accelsCharacteristic.notify();  // Notify the client of a change
-}
-// void updateEnvironment(int16_t alt, float tempC, float pressure, float voltage) {
-//     char str[20];
-    
-//     sprintf(str, "%d|%.1f|%.1f|%.1f", alt, tempC, pressure, voltage);
-
-//       /* Set the value */
-//       // environmentCharacteristic.setValue("Hi, I am trying to send a string over 20 bytes to Android");  // This is a value of a single byte
-//       environmentCharacteristic.setValue(str);  // This is a value of a single byte
-//       environmentCharacteristic.notify();  // Notify the client of a change
-// }
 
 
 
