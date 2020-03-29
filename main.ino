@@ -46,12 +46,14 @@ Scheduler ts;
 // Tasks definition
 void flashLEDcb();
 void beepSequencecb();
+void updateBLEdiags_cb();
 void updateBLEparams_cb();
 void measureVoltage_cb();
 Task tflashLED ( 1 * TASK_SECOND, -1, &flashLEDcb, &ts, true );
 Task tbeepSequence ( 2 * TASK_SECOND, -1, &beepSequencecb, &ts, true );
 Task tMeasureVoltage ( 10 * TASK_SECOND, -1, &measureVoltage_cb, &ts, true );
-Task tupdateBLEparams ( 200 * TASK_MILLISECOND, -1, &updateBLEparams_cb, &ts, true );
+Task tupdateBLEdiags ( 200 * TASK_MILLISECOND, -1, &updateBLEdiags_cb, &ts, true );     // BLE Diagnostics (fast refresh)
+Task tupdateBLEparams ( 500 * TASK_MILLISECOND, -1, &updateBLEparams_cb, &ts, true );   // BLE Params (slow refresh)
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -413,10 +415,14 @@ void beepSequencecb() {
     }   
 }
 
-void updateBLEparams_cb() {
-    // Called by task updateBLEparams_cb
+void updateBLEdiags_cb() {  // Updated on a fast schedule
+    // Called by task updateBLEdiags_cb
     updateDiagnostics(gyro.ypr, gyro.aaWorld.x, gyro.aaWorld.y, gyro.aaWorld.z, altitude.current_altitude, altitude.temperature, 
             altitude.pressure, altitude.humidity, voltage);
+}
+void updateBLEparams_cb() {  // Updated on a slower schedule
+    // Called by task updateBLEparas_cb
+    updateBLEparams();
 }
 
 void measureVoltage_cb() {
