@@ -55,12 +55,19 @@ Configuration::Configuration() {
     this->PID_ROLL_Ki = 0;
     this->PID_ROLL_Kd = 0.5;
     
-    this->X_GYRO_OFFSETS = 24;
-    this->Y_GYRO_OFFSETS = 43;
-    this->Z_GYRO_OFFSETS = 525;
-    this->X_ACCEL_OFFSETS = -1109;
-    this->Y_ACCEL_OFFSETS = 841;
-    this->Z_ACCEL_OFFSETS = 525;
+    // this->X_GYRO_OFFSETS = 38;
+    // this->Y_GYRO_OFFSETS = 42;
+    // this->Z_GYRO_OFFSETS = 31;
+    // this->X_ACCEL_OFFSETS = -1032;
+    // this->Y_ACCEL_OFFSETS = -1129;
+    // this->Z_ACCEL_OFFSETS = 2504;
+
+    this->X_ACCEL_OFFSETS = -1067;
+    this->Y_ACCEL_OFFSETS = 828;
+    this->Z_ACCEL_OFFSETS = 548;
+    this->X_GYRO_OFFSETS = 38;
+    this->Y_GYRO_OFFSETS = 41;
+    this->Z_GYRO_OFFSETS = 30;
 
 
 }
@@ -129,9 +136,9 @@ bool Configuration::readConfig() {
     this->EXCESSIVE_ANGLE_THRESHOLD = doc["EXCESSIVE_ANGLE_THRESHOLD"];
     this->EXCESSIVE_ANGLE_TIME = doc["EXCESSIVE_ANGLE_TIME"];
 
-    this->PITCH_AXIS = doc["PITCH_AXIS"]; // 2
+    this->PITCH_AXIS = doc["PITCH_AXIS"]; // 1
     this->YAW_AXIS = doc["YAW_AXIS"]; // 0
-    this->ROLL_AXIS = doc["ROLL_AXIS"]; // 1
+    this->ROLL_AXIS = doc["ROLL_AXIS"]; // 2
     
     this->SERVO_1_OFFSET = doc["SERVO_1_OFFSET"]; // -11
     this->SERVO_2_OFFSET = doc["SERVO_2_OFFSET"]; // -2
@@ -151,12 +158,12 @@ bool Configuration::readConfig() {
     this->PID_ROLL_Ki = doc["PID_ROLL_Ki"]; // 0
     this->PID_ROLL_Kd = doc["PID_ROLL_Kd"]; // 0.5
     
-    this->X_GYRO_OFFSETS = doc["X_GYRO_OFFSETS"]; // 24
-    this->Y_GYRO_OFFSETS = doc["Y_GYRO_OFFSETS"]; // 43
-    this->Z_GYRO_OFFSETS = doc["Z_GYRO_OFFSETS"]; // 525
-    this->X_ACCEL_OFFSETS = doc["X_ACCEL_OFFSETS"]; // -1109
-    this->Y_ACCEL_OFFSETS = doc["Y_ACCEL_OFFSETS"]; // 841
-    this->Z_ACCEL_OFFSETS = doc["Z_ACCEL_OFFSETS"]; // 525
+    // this->X_GYRO_OFFSETS = doc["X_GYRO_OFFSETS"]; // 24
+    // this->Y_GYRO_OFFSETS = doc["Y_GYRO_OFFSETS"]; // 43
+    // this->Z_GYRO_OFFSETS = doc["Z_GYRO_OFFSETS"]; // 525
+    // this->X_ACCEL_OFFSETS = doc["X_ACCEL_OFFSETS"]; // -1109
+    // this->Y_ACCEL_OFFSETS = doc["Y_ACCEL_OFFSETS"]; // 841
+    // this->Z_ACCEL_OFFSETS = doc["Z_ACCEL_OFFSETS"]; // 525
      
     configFile.close();
 
