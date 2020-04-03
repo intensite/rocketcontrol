@@ -318,29 +318,6 @@ void heartBeat() {
 
     // Execute the tasks
     ts.execute();
-    // // Flash Green LED every seconds
-    // if (currentHBeatMillis - previousHBeatMillis >= 1000) {
-    //     if(ledStatus == LOW) {
-    //         ledStatus = HIGH;
-    //     } else {
-    //         ledStatus = LOW;
-    //     }
-    //     digitalWrite(R_LED, HIGH); // High == OFF
-    //     digitalWrite(G_LED, ledStatus);
-    //     digitalWrite(B_LED, HIGH); 
-    // }
-
-    // // Beep sequence
-    // if (currentHBeatMillis - previousHBeatMillis >= 2000) {
-    //     previousHBeatMillis = currentHBeatMillis;
-
-    //     if(_CONF.BUZZER_ENABLE) {
-    //         buzz(PIEZO_BUZZER, 2637, 1000/12);
-    //         buzz(PIEZO_BUZZER, 3136, 1000/12);
-    //         buzz(PIEZO_BUZZER, 2093, 1000/12);
-    //         // buzz(PIEZO_BUZZER, 0, 1000/12);  // Cause ESP32 to crash (div by zero)
-    //     }
-    // }
 }
 
 void loop() {
@@ -434,5 +411,5 @@ void measureVoltage_cb() {
 
         // Debug
         temp = (int8_t)(voltage * 10 + .5);
-        Serial.print("Voltage: "); Serial.println((float)(temp/10));
+        //Serial.print("Voltage: "); Serial.println((float)(temp/10));
 }
