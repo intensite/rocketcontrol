@@ -39,27 +39,32 @@ void activatePyro(uint8_t channelNum) {
     switch(channelNum) {
         // Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
         case 1:
-            digitalWrite(PARACHUTE_IGNITER_PIN, true);
+            digitalWrite(PYRO_CHANEL_1, true);
             //tPyroChannel_1_Off.enableDelayed();
             break;
         // Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
         case 2:
-            digitalWrite(PARACHUTE_IGNITER_PIN, true);
+            digitalWrite(PYRO_CHANEL_2, true);
             //tPyroChannel_2_Off.enableDelayed();
             break;
         // Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
         case 3:
-            digitalWrite(PARACHUTE_IGNITER_PIN, true);
+            digitalWrite(PYRO_CHANEL_3, true);
             //tPyroChannel_3_Off.enableDelayed();
             break;
         // Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
         case 4:
-            digitalWrite(PARACHUTE_IGNITER_PIN, true);
+            digitalWrite(PYRO_CHANEL_4, true);
             //tPyroChannel_4_Off.enableDelayed();
             break;
     }
+}
 
-
+void resetPyro() {
+    digitalWrite(PYRO_CHANEL_1, LOW);
+    digitalWrite(PYRO_CHANEL_2, LOW);
+    digitalWrite(PYRO_CHANEL_3, LOW);
+    digitalWrite(PYRO_CHANEL_4, LOW);
 }
 
 //@TODO: Optimize these call back function into just one
