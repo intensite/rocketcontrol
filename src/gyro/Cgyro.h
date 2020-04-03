@@ -111,8 +111,8 @@ uint8_t Gyro::setupGyro() {
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // Calibration Time: generate offsets and calibrate our MPU6050
-        mpu.CalibrateAccel(6);
-        mpu.CalibrateGyro(6);
+        //mpu.CalibrateAccel(6);    // Stephen Disabled for now (Seems to be affected when the board is started horizontally)
+        //mpu.CalibrateGyro(6);     // Stephen Disabled for now (Seems to be affected when the board is started horizontally)
         mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
         // Serial.println(F("Enabling DMP..."));
