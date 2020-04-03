@@ -150,7 +150,8 @@ void CliCommand::processGetCommand(const char* setting) {
 }
 
 void CliCommand::processSetCommand(const char* setting, const char* value) {
-
+    uint8_t DO_NOT_SAVE_FLAG = false;       // To save  the SPIFFS memory freom unnecessary write access
+    // ----------------- PREFS PAGE -----------------------------------
     if(strcmp(setting, "BUZZER") == 0) {
         _CONF.BUZZER_ENABLE = atoi(value); 
         Serial.print("_CONF.BUZZER_ENABLE: "); Serial.println(_CONF.BUZZER_ENABLE);  
@@ -172,25 +173,91 @@ void CliCommand::processSetCommand(const char* setting, const char* value) {
         Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
     } 
     else if(strcmp(setting, "SCAN_TIME_INTERVAL") == 0) {
-        _CONF.FORMAT_MEMORY = atoi(value); 
+        _CONF.SCAN_TIME_INTERVAL = atoi(value); 
         Serial.print("_CONF.SCAN_TIME_INTERVAL: "); Serial.println(_CONF.SCAN_TIME_INTERVAL);    
     } 
+    // ----------------- PYRO PAGE -----------------------------------
+    else if(strcmp(setting, "PYRO_ACTIVATION_DELAY") == 0) {
+        _CONF.PYRO_ACTIVATION_DELAY = atoi(value); 
+        Serial.print("_CONF.PYRO_ACTIVATION_DELAY: "); Serial.println(_CONF.PYRO_ACTIVATION_DELAY);    
+    } 
+    else if(strcmp(setting, "APOGEE_DIFF_METERS") == 0) {
+        _CONF.APOGEE_DIFF_METERS = atoi(value); 
+        Serial.print("_CONF.APOGEE_DIFF_METERS: "); Serial.println(_CONF.APOGEE_DIFF_METERS);    
+    } 
+    else if(strcmp(setting, "PARACHUTE_DELAY") == 0) {
+        _CONF.PARACHUTE_DELAY = atoi(value); 
+        Serial.print("_CONF.PARACHUTE_DELAY: "); Serial.println(_CONF.PARACHUTE_DELAY);    
+    } 
+    else if(strcmp(setting, "PYRO_1_FIRE_ALTITUDE") == 0) {
+        _CONF.PYRO_1_FIRE_ALTITUDE = atoi(value); 
+        Serial.print("_CONF.PYRO_1_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_1_FIRE_ALTITUDE);    
+    } 
+    else if(strcmp(setting, "PYRO_2_FIRE_ALTITUDE") == 0) {
+        _CONF.PYRO_2_FIRE_ALTITUDE = atoi(value); 
+        Serial.print("_CONF.PYRO_2_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_2_FIRE_ALTITUDE);    
+    } 
+    else if(strcmp(setting, "PYRO_3_FIRE_ALTITUDE") == 0) {
+        _CONF.PYRO_3_FIRE_ALTITUDE = atoi(value); 
+        Serial.print("_CONF.PYRO_3_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_3_FIRE_ALTITUDE);    
+    } 
+    else if(strcmp(setting, "PYRO_4_FIRE_ALTITUDE") == 0) {
+        _CONF.PYRO_4_FIRE_ALTITUDE = atoi(value); 
+        Serial.print("_CONF.PYRO_4_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_4_FIRE_ALTITUDE);    
+    } 
+    else if(strcmp(setting, "AUTOMATIC_ANGLE_ABORT") == 0) {
+        _CONF.AUTOMATIC_ANGLE_ABORT = atoi(value); 
+        Serial.print("_CONF.AUTOMATIC_ANGLE_ABORT: "); Serial.println(_CONF.AUTOMATIC_ANGLE_ABORT);    
+    } 
+    else if(strcmp(setting, "EXCESSIVE_ANGLE_THRESHOLD") == 0) {
+        _CONF.EXCESSIVE_ANGLE_THRESHOLD = atoi(value); 
+        Serial.print("_CONF.EXCESSIVE_ANGLE_THRESHOLD: "); Serial.println(_CONF.EXCESSIVE_ANGLE_THRESHOLD);    
+    } 
+    else if(strcmp(setting, "EXCESSIVE_ANGLE_TIME") == 0) {
+        _CONF.EXCESSIVE_ANGLE_TIME = atoi(value); 
+        Serial.print("_CONF.EXCESSIVE_ANGLE_TIME: "); Serial.println(_CONF.EXCESSIVE_ANGLE_TIME);    
+    } 
     else if(strcmp(setting, "FIRE_PYRO") == 0) {
+        DO_NOT_SAVE_FLAG = true;
         uint8_t channel = atoi(value);
         activatePyro(channel);
     } 
-    
+    else if(strcmp(setting, "RESET_PYRO") == 0) {
+        DO_NOT_SAVE_FLAG = true;
+        // Reset ALL pyro channels at once!
+        resetPyro();
+    } 
+    // ----------------- GUIDANCE PAGE -----------------------------------
+    else if(strcmp(setting, "PITCH_AXIS") == 0) {
+         _CONF.PITCH_AXIS = atoi(value); 
+        Serial.print("_CONF.PITCH_AXIS: "); Serial.println(_CONF.PITCH_AXIS); 
+    } 
+    else if(strcmp(setting, "YAW_AXIS") == 0) {
+         _CONF.YAW_AXIS = atoi(value); 
+        Serial.print("_CONF.YAW_AXIS: "); Serial.println(_CONF.YAW_AXIS); 
+    } 
+    else if(strcmp(setting, "ROLL_AXIS") == 0) {
+         _CONF.ROLL_AXIS = atoi(value); 
+        Serial.print("_CONF.ROLL_AXIS: "); Serial.println(_CONF.ROLL_AXIS); 
+    } 
+    // -------------------------------------------------------------------
 
-    if(!_CONF.saveConfig()) {
-        Serial.println("Configuration not saved to memory!!");
+    if(!DO_NOT_SAVE_FLAG) {
+        if(!_CONF.saveConfig()) {
+            Serial.println("Configuration not saved to memory!!");
+        } else {
+            // Emit a sound to acknolege the processing of the command
+            //@TODO: Change tune to something different
+                buzz(PIEZO_BUZZER, 1500, 750/12);
+                buzz(PIEZO_BUZZER, 400, 1000/12);
+                // buzz(PIEZO_BUZZER, 2637, 1000/12);
+                // buzz(PIEZO_BUZZER, 2637, 1000/12);
+                // buzz(PIEZO_BUZZER, 2637, 10000/12);
+        }
     } else {
-        // Emit a sound to acknolege the processing of the command
-        //@TODO: Change tune to something different
-            buzz(PIEZO_BUZZER, 1500, 750/12);
-            buzz(PIEZO_BUZZER, 400, 1000/12);
-            // buzz(PIEZO_BUZZER, 2637, 1000/12);
-            // buzz(PIEZO_BUZZER, 2637, 1000/12);
-            // buzz(PIEZO_BUZZER, 2637, 10000/12);
+        // Emmit a sound anyways
+        buzz(PIEZO_BUZZER, 1500, 750/12);
+        buzz(PIEZO_BUZZER, 400, 1000/12);
     }
 }
 
