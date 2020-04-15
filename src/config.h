@@ -5,7 +5,7 @@
 // PIN ASSIGNMENT 
 #define FINS_SERVO_1_PIN 16
 #define FINS_SERVO_2_PIN 17
-#define FINS_SERVO_3_PIN 5
+#define FINS_SERVO_3_PIN 23         // Used to be GPIO5 but somehow it didn't work (Board had to be modified)
 #define FINS_SERVO_4_PIN 18
 
 #define PARACHUTE_IGNITER_PIN 32           // To Be Removed

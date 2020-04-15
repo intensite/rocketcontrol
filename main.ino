@@ -24,6 +24,7 @@ float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gra
 bool is_abort = false;
 bool is_parachute_deployed = false;
 int16_t g_servo_pitch = 0;
+int16_t g_servo_yaw = 0;
 int16_t g_servo_roll = 0;
 byte IS_READY_TO_FLY;   // Used with the REMOVE_BEFORE_FLIGHT jumper
 
@@ -48,12 +49,14 @@ void flashLEDcb();
 void beepSequencecb();
 void updateBLEdiags_cb();
 void updateBLEparams_cb();
+void updateBLEGuidanceConfig_cb();
 void measureVoltage_cb();
 Task tflashLED ( 1 * TASK_SECOND, -1, &flashLEDcb, &ts, true );
 Task tbeepSequence ( 2 * TASK_SECOND, -1, &beepSequencecb, &ts, true );
 Task tMeasureVoltage ( 10 * TASK_SECOND, -1, &measureVoltage_cb, &ts, true );
 Task tupdateBLEdiags ( 200 * TASK_MILLISECOND, -1, &updateBLEdiags_cb, &ts, true );     // BLE Diagnostics (fast refresh)
 Task tupdateBLEparams ( 500 * TASK_MILLISECOND, -1, &updateBLEparams_cb, &ts, true );   // BLE Params (slow refresh)
+Task tupdateBLEGuidanceConfig ( 550 * TASK_MILLISECOND, -1, &updateBLEGuidanceConfig_cb, &ts, true );   // BLE guidance Params (slow refresh)
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -73,18 +76,33 @@ void IRAM_ATTR dmpDataReady() {
 void displaySensorData() {
     
         // Debug stuff
-        Serial.print(F(" Gyro Pitch: "));
-        Serial.print((int16_t)(gyro.ypr[_CONF.PITCH_AXIS] * 180/M_PI));
-        Serial.print(F(" Yaw: "));
-        Serial.print((int16_t)(gyro.ypr[_CONF.YAW_AXIS] * 180/M_PI));
-        Serial.print(F(" Roll: "));
-        Serial.print((int16_t)(gyro.ypr[_CONF.ROLL_AXIS] * 180/M_PI));
+        // Serial.print(F("Pitch:"));
+        // Serial.print((int16_t)(gyro.ypr[_CONF.PITCH_AXIS] * 180/M_PI));
+        // Serial.print(F("\tYaw:"));
+        // Serial.print((int16_t)(gyro.ypr[_CONF.YAW_AXIS] * 180/M_PI));
+        // Serial.print(F("\tRoll:"));
+        // Serial.print((int16_t)(gyro.ypr[_CONF.ROLL_AXIS] * 180/M_PI));
         
-        Serial.print(F("\t\tAltitude:"));
-        Serial.print(altitude.current_altitude);
+        // Serial.print(F("\tAltitude:"));
+        // Serial.print(altitude.current_altitude);
 
-        Serial.print(F("\t\tTemperature:"));
-        Serial.println(altitude.temperature);
+        // Serial.print(F("\tTemperature:"));
+        // Serial.println(altitude.temperature);
+
+        // //***************************************************************************************
+        // // Plotter stuff
+        // //***************************************************************************************
+        // //Serial.print(F("Pitch:"));
+        // Serial.print((int16_t)(gyro.ypr[_CONF.PITCH_AXIS])); Serial.print(",");
+        // //Serial.print(F("\tYaw:"));
+        // Serial.print((int16_t)(gyro.ypr[_CONF.YAW_AXIS])); Serial.print(",");
+        // //Serial.print(F("\tRoll:"));
+        // Serial.print((int16_t)(gyro.ypr[_CONF.ROLL_AXIS] )); Serial.print(",");
+        // //Serial.print(F("\tAltitude:"));
+        // Serial.print(altitude.current_altitude); Serial.print(",");
+        // //Serial.print(F("\tTemperature:"));
+        // Serial.println(altitude.temperature); 
+        // //***************************************************************************************
 
         // /* Voltage mesurement */
         // float temp;
@@ -211,14 +229,35 @@ void setup() {
 
     // initialize serial communication
     Serial.begin(115200);  // Reduced the speed as it was crashing the arduino at 115200
-    delay(2000);                // waits for two second
+    delay(500);                // waits for the serial to settle
     _CONF.readConfig();
     pinMode(R_LED, OUTPUT);     digitalWrite(R_LED, HIGH);
     pinMode(G_LED, OUTPUT);     digitalWrite(G_LED, HIGH);
     pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
     pinMode(PIEZO_BUZZER, OUTPUT);
     pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
+    led_color(LED_COLOR_BLUE);    // Set the LED to blue durring setup
     
+
+// //************************************************************************************
+// // EMERGENCY MEMORY ERASE Mode
+// //************************************************************************************
+
+// Serial.println(F("EMERGENCY MEMORY ERASE Mode"));
+// Serial.println(F("Initialize the log system"));
+// lr::Storage::begin();
+// Serial.println(F("**** Erassing memory....This takes a while...."));
+// lr::LogSystem::format();
+// delay(5000); 
+// Serial.println(F("**** done Erassing memory. STARTING ENDLESS LOOP......."));
+// // Exit the loop 
+// noInterrupts();
+// while(1) {}
+// // abort();
+// //************************************************************************************
+
+
+
 
     pinMode(REMOVE_BEFORE_FLIGHT, INPUT_PULLUP); // HIGH IF READY TO FLY. Used with Jumper (Pin is configured as INPUT_PULLUP  ) 
     IS_READY_TO_FLY = digitalRead(REMOVE_BEFORE_FLIGHT); 
@@ -235,7 +274,8 @@ void setup() {
     // Setup bluetooth
     setupBLE(cli);
 
-    // setupServo();
+    setupServo();
+    
     // if (!DATA_RECOVERY_MODE) {
     if (!_CONF.DATA_RECOVERY_MODE) {
         dataModeSinceSetup = 0;  // Save that the DATA_RECOVERY_MODE was off on setup
@@ -400,6 +440,10 @@ void updateBLEdiags_cb() {  // Updated on a fast schedule
 void updateBLEparams_cb() {  // Updated on a slower schedule
     // Called by task updateBLEparas_cb
     updateBLEparams();
+}
+void updateBLEGuidanceConfig_cb() {  // Updated on a slower schedule
+    // Called by task tupdateBLEGuidanceConfig
+    updateGuiding();
 }
 
 void measureVoltage_cb() {

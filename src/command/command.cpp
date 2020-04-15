@@ -120,26 +120,62 @@ void CliCommand::processGetCommand(const char* setting) {
         Serial.print("_CONF.MEMORY_CARD_ENABLED: "); Serial.println(_CONF.MEMORY_CARD_ENABLED);    
         Serial.print("_CONF.DATA_RECOVERY_MODE: "); Serial.println(_CONF.DATA_RECOVERY_MODE);    
         Serial.print("_CONF.FORMAT_MEMORY: "); Serial.println(_CONF.FORMAT_MEMORY);    
-        Serial.print("_CONF.APOGEE_DIFF_METERS: "); Serial.println(_CONF.APOGEE_DIFF_METERS);    
-        Serial.print("_CONF.EXCESSIVE_ANGLE_THRESHOLD: "); Serial.println(_CONF.EXCESSIVE_ANGLE_THRESHOLD);    
         Serial.print("_CONF.SCAN_TIME_INTERVAL: "); Serial.println(_CONF.SCAN_TIME_INTERVAL);    
+
+        // PYRO CONTROL
+        Serial.println("// PYRO CONTROL");
+        Serial.print("_CONF.APOGEE_DIFF_METERS: "); Serial.println(_CONF.APOGEE_DIFF_METERS);    
         Serial.print("_CONF.PARACHUTE_DELAY: "); Serial.println(_CONF.PARACHUTE_DELAY);    
-        Serial.print("_CONF.PITCH_AXIS: "); Serial.println(_CONF.PITCH_AXIS);    
-        Serial.print("_CONF.YAW_AXIS: "); Serial.println(_CONF.YAW_AXIS);    
-        Serial.print("_CONF.ROLL_AXIS: "); Serial.println(_CONF.ROLL_AXIS);    
+        Serial.print("_CONF.PYRO_ACTIVATION_DELAY: "); Serial.println(_CONF.PYRO_ACTIVATION_DELAY);    
+        Serial.print("_CONF.PYRO_1_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_1_FIRE_ALTITUDE);    
+        Serial.print("_CONF.PYRO_2_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_2_FIRE_ALTITUDE);    
+        Serial.print("_CONF.PYRO_3_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_3_FIRE_ALTITUDE);    
+        Serial.print("_CONF.PYRO_4_FIRE_ALTITUDE: "); Serial.println(_CONF.PYRO_4_FIRE_ALTITUDE);    
+        Serial.print("_CONF.AUTOMATIC_ANGLE_ABORT: "); Serial.println(_CONF.AUTOMATIC_ANGLE_ABORT);    
+        Serial.print("_CONF.EXCESSIVE_ANGLE_THRESHOLD: "); Serial.println(_CONF.EXCESSIVE_ANGLE_THRESHOLD);    
+        Serial.print("_CONF.EXCESSIVE_ANGLE_TIME: "); Serial.println(_CONF.EXCESSIVE_ANGLE_TIME);    
+
+
+        // GUIDANCE CONTROL
+        Serial.println("// GUIDANCE CONTROL");
+        Serial.print("_CONF.GUIDING_TYPE: "); Serial.println(_CONF.GUIDING_TYPE);    
+        Serial.print("_CONF.ROLL_CONTROL_ENABLED: "); Serial.println(_CONF.ROLL_CONTROL_ENABLED);    
+        Serial.print("_CONF.ROLL_CONTROL_TYPE: "); Serial.println(_CONF.ROLL_CONTROL_TYPE);    
+        
+        // SERVO AXIS MAPPING  (POSSIBLE VALUES: X,Y,Z,A)   // A Stands for Other Possibly for reaction wheel
+        Serial.print("_CONF.SERVO_1_AXIS: "); Serial.println(_CONF.SERVO_1_AXIS);    
+        Serial.print("_CONF.SERVO_2_AXIS: "); Serial.println(_CONF.SERVO_2_AXIS);    
+        Serial.print("_CONF.SERVO_3_AXIS: "); Serial.println(_CONF.SERVO_3_AXIS);    
+        Serial.print("_CONF.SERVO_4_AXIS: "); Serial.println(_CONF.SERVO_4_AXIS);    
+
         Serial.print("_CONF.SERVO_1_OFFSET: "); Serial.println(_CONF.SERVO_1_OFFSET);    
-        Serial.print("_CONF.SERVO_2_OFFSET: "); Serial.println(_CONF.SERVO_2_OFFSET);   
+        Serial.print("_CONF.SERVO_2_OFFSET: "); Serial.println(_CONF.SERVO_2_OFFSET);    
+        Serial.print("_CONF.SERVO_3_OFFSET: "); Serial.println(_CONF.SERVO_3_OFFSET);    
+        Serial.print("_CONF.SERVO_4_OFFSET: "); Serial.println(_CONF.SERVO_4_OFFSET);    
 
         Serial.print("_CONF.SERVO_1_ORIENTATION: "); Serial.println(_CONF.SERVO_1_ORIENTATION);    
         Serial.print("_CONF.SERVO_2_ORIENTATION: "); Serial.println(_CONF.SERVO_2_ORIENTATION);    
+        Serial.print("_CONF.SERVO_3_ORIENTATION: "); Serial.println(_CONF.SERVO_3_ORIENTATION);    
+        Serial.print("_CONF.SERVO_4_ORIENTATION: "); Serial.println(_CONF.SERVO_4_ORIENTATION);    
         Serial.print("_CONF.MAX_FINS_TRAVEL: "); Serial.println(_CONF.MAX_FINS_TRAVEL);    
+
+        // PID TUNING
         Serial.print("_CONF.PID_PITCH_Kp: "); Serial.println(_CONF.PID_PITCH_Kp);    
         Serial.print("_CONF.PID_PITCH_Ki: "); Serial.println(_CONF.PID_PITCH_Ki);    
         Serial.print("_CONF.PID_PITCH_Kd: "); Serial.println(_CONF.PID_PITCH_Kd);    
+        Serial.print("_CONF.PID_YAW_Kp: "); Serial.println(_CONF.PID_YAW_Kp);    
+        Serial.print("_CONF.PID_YAW_Ki: "); Serial.println(_CONF.PID_YAW_Ki);    
+        Serial.print("_CONF.PID_YAW_Kd: "); Serial.println(_CONF.PID_YAW_Kd);    
         Serial.print("_CONF.PID_ROLL_Kp: "); Serial.println(_CONF.PID_ROLL_Kp);    
-
         Serial.print("_CONF.PID_ROLL_Ki: "); Serial.println(_CONF.PID_ROLL_Ki);    
-        Serial.print("_CONF.PID_ROLL_Kd: "); Serial.println(_CONF.PID_ROLL_Kd);    
+        Serial.print("_CONF.PID_ROLL_Kd: "); Serial.println(_CONF.PID_ROLL_Kd);   
+
+        // IMU AXIS PHYSICAL LOCATION (ypr[3])
+        Serial.print("_CONF.PITCH_AXIS: "); Serial.println(_CONF.PITCH_AXIS);    
+        Serial.print("_CONF.YAW_AXIS: "); Serial.println(_CONF.YAW_AXIS);    
+        Serial.print("_CONF.ROLL_AXIS: "); Serial.println(_CONF.ROLL_AXIS);    
+
+        // IMU CALIBRATION
         Serial.print("_CONF.X_GYRO_OFFSETS: "); Serial.println(_CONF.X_GYRO_OFFSETS);    
         Serial.print("_CONF.Y_GYRO_OFFSETS: "); Serial.println(_CONF.Y_GYRO_OFFSETS);    
         Serial.print("_CONF.Z_GYRO_OFFSETS: "); Serial.println(_CONF.Z_GYRO_OFFSETS);    
@@ -240,6 +276,103 @@ void CliCommand::processSetCommand(const char* setting, const char* value) {
          _CONF.ROLL_AXIS = atoi(value); 
         Serial.print("_CONF.ROLL_AXIS: "); Serial.println(_CONF.ROLL_AXIS); 
     } 
+    else if(strcmp(setting, "GUIDING_TYPE") == 0) {
+         _CONF.GUIDING_TYPE = atoi(value); 
+        Serial.print("_CONF.GUIDING_TYPE: "); Serial.println(_CONF.GUIDING_TYPE); 
+    } 
+    else if(strcmp(setting, "ROLL_CONTROL_ENABLED") == 0) {
+         _CONF.ROLL_CONTROL_ENABLED = atoi(value); 
+        Serial.print("_CONF.ROLL_CONTROL_ENABLED: "); Serial.println(_CONF.ROLL_CONTROL_ENABLED); 
+    } 
+    else if(strcmp(setting, "ROLL_CONTROL_TYPE") == 0) {
+         _CONF.ROLL_CONTROL_TYPE = atoi(value); 
+        Serial.print("_CONF.ROLL_CONTROL_TYPE: "); Serial.println(_CONF.ROLL_CONTROL_TYPE); 
+    } 
+    else if(strcmp(setting, "SERVO_1_AXIS") == 0) {--
+         _CONF.SERVO_1_AXIS = value[0]; 
+        Serial.print("_CONF.SERVO_1_AXIS: "); Serial.println(_CONF.SERVO_1_AXIS); 
+    } 
+    else if(strcmp(setting, "SERVO_2_AXIS") == 0) {
+         _CONF.SERVO_2_AXIS = value[0]; 
+        Serial.print("_CONF.SERVO_2_AXIS: "); Serial.println(_CONF.SERVO_2_AXIS); 
+    } 
+    else if(strcmp(setting, "SERVO_3_AXIS") == 0) {
+         _CONF.SERVO_3_AXIS = value[0]; 
+        Serial.print("_CONF.SERVO_3_AXIS: "); Serial.println(_CONF.SERVO_3_AXIS); 
+    } 
+    else if(strcmp(setting, "SERVO_4_AXIS") == 0) {
+         _CONF.SERVO_4_AXIS = value[0]; 
+        Serial.print("_CONF.SERVO_4_AXIS: "); Serial.println(_CONF.SERVO_4_AXIS); 
+    } 
+    else if(strcmp(setting, "SERVO_1_OFFSET") == 0) {
+         _CONF.SERVO_1_OFFSET = atoi(value); 
+        Serial.print("_CONF.SERVO_1_OFFSET: "); Serial.println(_CONF.SERVO_1_OFFSET); 
+    } 
+    else if(strcmp(setting, "SERVO_2_OFFSET") == 0) {
+         _CONF.SERVO_2_OFFSET = atoi(value); 
+        Serial.print("_CONF.SERVO_2_OFFSET: "); Serial.println(_CONF.SERVO_2_OFFSET); 
+    } 
+    else if(strcmp(setting, "SERVO_3_OFFSET") == 0) {
+         _CONF.SERVO_3_OFFSET = atoi(value); 
+        Serial.print("_CONF.SERVO_3_OFFSET: "); Serial.println(_CONF.SERVO_3_OFFSET); 
+    } 
+    else if(strcmp(setting, "SERVO_4_OFFSET") == 0) {
+         _CONF.SERVO_4_OFFSET = atoi(value); 
+        Serial.print("_CONF.SERVO_4_OFFSET: "); Serial.println(_CONF.SERVO_4_OFFSET); 
+    } 
+    else if(strcmp(setting, "SERVO_1_ORIENTATION") == 0) {
+         _CONF.SERVO_1_ORIENTATION = atoi(value); 
+        Serial.print("_CONF.SERVO_1_ORIENTATION: "); Serial.println(_CONF.SERVO_1_ORIENTATION); 
+    } 
+    else if(strcmp(setting, "SERVO_2_ORIENTATION") == 0) {
+         _CONF.SERVO_2_ORIENTATION = atoi(value); 
+        Serial.print("_CONF.SERVO_2_ORIENTATION: "); Serial.println(_CONF.SERVO_2_ORIENTATION); 
+    } 
+    else if(strcmp(setting, "SERVO_3_ORIENTATION") == 0) {
+         _CONF.SERVO_3_ORIENTATION = atoi(value); 
+        Serial.print("_CONF.SERVO_3_ORIENTATION: "); Serial.println(_CONF.SERVO_3_ORIENTATION); 
+    } 
+    else if(strcmp(setting, "SERVO_4_ORIENTATION") == 0) {
+         _CONF.SERVO_4_ORIENTATION = atoi(value); 
+        Serial.print("_CONF.SERVO_4_ORIENTATION: "); Serial.println(_CONF.SERVO_4_ORIENTATION); 
+    } 
+    else if(strcmp(setting, "PID_PITCH_Kp") == 0) {
+         _CONF.PID_PITCH_Kp = atof(value); 
+        Serial.print("_CONF.PID_PITCH_Kp: "); Serial.println(_CONF.PID_PITCH_Kp); 
+    } 
+    else if(strcmp(setting, "PID_PITCH_Ki") == 0) {
+         _CONF.PID_PITCH_Ki = atof(value); 
+        Serial.print("_CONF.PID_PITCH_Ki: "); Serial.println(_CONF.PID_PITCH_Ki); 
+    } 
+    else if(strcmp(setting, "PID_PITCH_Kd") == 0) {
+         _CONF.PID_PITCH_Kd = atof(value); 
+        Serial.print("_CONF.PID_PITCH_Kd: "); Serial.println(_CONF.PID_PITCH_Kd); 
+    } 
+    else if(strcmp(setting, "PID_YAW_Kp") == 0) {
+         _CONF.PID_YAW_Kp = atof(value); 
+        Serial.print("_CONF.PID_YAW_Kp: "); Serial.println(_CONF.PID_YAW_Kp); 
+    } 
+    else if(strcmp(setting, "PID_YAW_Ki") == 0) {
+         _CONF.PID_YAW_Ki = atof(value); 
+        Serial.print("_CONF.PID_YAW_Ki: "); Serial.println(_CONF.PID_YAW_Ki); 
+    } 
+    else if(strcmp(setting, "PID_YAW_Kd") == 0) {
+         _CONF.PID_YAW_Kd = atof(value); 
+        Serial.print("_CONF.PID_YAW_Kd: "); Serial.println(_CONF.PID_YAW_Kd); 
+    } 
+    else if(strcmp(setting, "PID_ROLL_Kp") == 0) {
+         _CONF.PID_ROLL_Kp = atof(value); 
+        Serial.print("_CONF.PID_ROLL_Kp: "); Serial.println(_CONF.PID_ROLL_Kp); 
+    } 
+    else if(strcmp(setting, "PID_ROLL_Ki") == 0) {
+         _CONF.PID_ROLL_Ki = atof(value); 
+        Serial.print("_CONF.PID_ROLL_Ki: "); Serial.println(_CONF.PID_ROLL_Ki); 
+    } 
+    else if(strcmp(setting, "PID_ROLL_Kd") == 0) {
+         _CONF.PID_ROLL_Kd = atof(value); 
+        Serial.print("_CONF.PID_ROLL_Kd: "); Serial.println(_CONF.PID_ROLL_Kd); 
+    } 
+
     // -------------------------------------------------------------------
 
     if(!DO_NOT_SAVE_FLAG) {

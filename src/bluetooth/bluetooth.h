@@ -5,3 +5,4 @@ void updateDiagnostics(float ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z
 void updateBLEparams();
 void updatePrefs();
 void updatePyros();
+void updateGuiding();

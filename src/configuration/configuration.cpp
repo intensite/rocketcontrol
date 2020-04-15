@@ -34,42 +34,50 @@ Configuration::Configuration() {
     this->EXCESSIVE_ANGLE_TIME = 500;
 
 
-    this->PITCH_AXIS = 2;
-    this->YAW_AXIS = 0;
-    this->ROLL_AXIS = 1;
+    // GUIDANCE CONTROL
+    this->GUIDING_TYPE = 1;                              // Type of guiding system (1=TVC, 2=Fins)
+    this->ROLL_CONTROL_ENABLED = 0;                      // 1=Enabled, 0=Disabled
+    this->ROLL_CONTROL_TYPE = 1;                         // If enabled, what type of roll control (1=Reaction wheel 2=Fins on the X-Axis)
+
+    // SERVO AXIS MAPPING  (POSSIBLE VALUES: X,Y,Z,A)   // A Stands for Other Possibly for reaction wheel
+    this->SERVO_1_AXIS = 'X';                            // Two Servo can be on the same Axis
+    this->SERVO_2_AXIS = 'Y';
+    this->SERVO_3_AXIS = 'Z';
+    this->SERVO_4_AXIS = 'A';
     
-    this->SERVO_1_OFFSET = -11;
-    this->SERVO_2_OFFSET = -2;
-    this->SERVO_3_OFFSET = -11;
-    this->SERVO_4_OFFSET = -2;
-    this->SERVO_1_ORIENTATION = -1;
-    this->SERVO_2_ORIENTATION = -1;
-    this->SERVO_3_ORIENTATION = -1;
-    this->SERVO_4_ORIENTATION = -1;
+    this->SERVO_1_OFFSET = -11;                              // Used to fine tune the SERVOs alingments
+    this->SERVO_2_OFFSET = -2;                              // Used to fine tune the SERVOs alingments
+    this->SERVO_3_OFFSET = -11;                              // Used to fine tune the SERVOs alingments
+    this->SERVO_4_OFFSET = -2;                              // Used to fine tune the SERVOs alingments
+    this->SERVO_1_ORIENTATION = -1;                         // Used to reverse the servo rotation direction possible values (1, -1)
+    this->SERVO_2_ORIENTATION = -1;                         // Used to reverse the servo rotation direction possible values (1, -1)
+    this->SERVO_3_ORIENTATION = -1;                         // Used to reverse the servo rotation direction possible values (1, -1)
+    this->SERVO_4_ORIENTATION = -1;                         // Used to reverse the servo rotation direction possible values (1, -1)
     this->MAX_FINS_TRAVEL = 15;
     
+    // PID TUNING
     this->PID_PITCH_Kp = 2;
     this->PID_PITCH_Ki = 0;
     this->PID_PITCH_Kd = 0.5;
+    this->PID_YAW_Kp = 2;
+    this->PID_YAW_Ki = 0;
+    this->PID_YAW_Kd = 0.5;
     this->PID_ROLL_Kp = 2;
     this->PID_ROLL_Ki = 0;
     this->PID_ROLL_Kd = 0.5;
-    
-    // this->X_GYRO_OFFSETS = 38;
-    // this->Y_GYRO_OFFSETS = 42;
-    // this->Z_GYRO_OFFSETS = 31;
-    // this->X_ACCEL_OFFSETS = -1032;
-    // this->Y_ACCEL_OFFSETS = -1129;
-    // this->Z_ACCEL_OFFSETS = 2504;
 
+    // IMU AXIS PHYSICAL LOCATION (ypr[3])
+    this->PITCH_AXIS = 2;
+    this->YAW_AXIS = 0;
+    this->ROLL_AXIS = 1;
+
+    // IMU CALIBRATION
     this->X_ACCEL_OFFSETS = -1067;
-    this->Y_ACCEL_OFFSETS = 828;
-    this->Z_ACCEL_OFFSETS = 548;
-    this->X_GYRO_OFFSETS = 38;
+    this->Y_ACCEL_OFFSETS = 823;
+    this->Z_ACCEL_OFFSETS = 559;
+    this->X_GYRO_OFFSETS = 41;
     this->Y_GYRO_OFFSETS = 41;
-    this->Z_GYRO_OFFSETS = 30;
-
-
+    this->Z_GYRO_OFFSETS = 31;
 }
 
 Configuration& Configuration::instance() {
@@ -94,7 +102,7 @@ bool Configuration::readConfig() {
     }
 
     size_t size = configFile.size();
-    if (size > 1024) {
+    if (size > 1536) {
         Serial.println("Config file size is too large");
         return false;
     }
@@ -136,6 +144,40 @@ bool Configuration::readConfig() {
     this->EXCESSIVE_ANGLE_THRESHOLD = doc["EXCESSIVE_ANGLE_THRESHOLD"];
     this->EXCESSIVE_ANGLE_TIME = doc["EXCESSIVE_ANGLE_TIME"];
 
+
+    // GUIDANCE CONTROL
+    this->GUIDING_TYPE = doc["GUIDING_TYPE"];                              // Type of guiding system (1=TVC, 2=Fins)
+    this->ROLL_CONTROL_ENABLED = doc["ROLL_CONTROL_ENABLED"];                      // 1=Enabled, 0=Disabled
+    this->ROLL_CONTROL_TYPE = doc["ROLL_CONTROL_TYPE"];                         // If enabled, what type of roll control (1=Reaction wheel 2=Fins on the X-Axis)
+
+    // SERVO AXIS MAPPING  (POSSIBLE VALUES: X,Y,Z,A)   // A Stands for Other Possibly for reaction wheel
+    this->SERVO_1_AXIS = doc["SERVO_1_AXIS"];                            // Two Servo can be on the same Axis
+    this->SERVO_2_AXIS = doc["SERVO_2_AXIS"];
+    this->SERVO_3_AXIS = doc["SERVO_3_AXIS"];
+    this->SERVO_4_AXIS = doc["SERVO_4_AXIS"];
+    
+    this->SERVO_1_OFFSET = doc["SERVO_1_OFFSET"];                              // Used to fine tune the SERVOs alingments
+    this->SERVO_2_OFFSET = doc["SERVO_2_OFFSET"];                             // Used to fine tune the SERVOs alingments
+    this->SERVO_3_OFFSET = doc["SERVO_3_OFFSET"];                              // Used to fine tune the SERVOs alingments
+    this->SERVO_4_OFFSET = doc["SERVO_4_OFFSET"];                             // Used to fine tune the SERVOs alingments
+    this->SERVO_1_ORIENTATION = doc["SERVO_1_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    this->SERVO_2_ORIENTATION = doc["SERVO_2_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    this->SERVO_3_ORIENTATION = doc["SERVO_3_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    this->SERVO_4_ORIENTATION = doc["SERVO_4_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    this->MAX_FINS_TRAVEL = doc["MAX_FINS_TRAVEL"];
+
+    // PID TUNING
+    this->PID_PITCH_Kp = doc["PID_PITCH_Kp"]; // 2
+    this->PID_PITCH_Ki = doc["PID_PITCH_Ki"]; // 0
+    this->PID_PITCH_Kd = doc["PID_PITCH_Kd"]; // 0.5
+    this->PID_YAW_Kp = doc["PID_YAW_Kp"]; // 2
+    this->PID_YAW_Ki = doc["PID_YAW_Ki"]; // 0
+    this->PID_YAW_Kd = doc["PID_YAW_Kd"]; // 0.5
+    this->PID_ROLL_Kp = doc["PID_ROLL_Kp"]; // 2
+    this->PID_ROLL_Ki = doc["PID_ROLL_Ki"]; // 0
+    this->PID_ROLL_Kd = doc["PID_ROLL_Kd"]; // 0.5
+    
+    // IMU AXIS PHYSICAL LOCATION (ypr[3])
     this->PITCH_AXIS = doc["PITCH_AXIS"]; // 1
     this->YAW_AXIS = doc["YAW_AXIS"]; // 0
     this->ROLL_AXIS = doc["ROLL_AXIS"]; // 2
@@ -149,21 +191,13 @@ bool Configuration::readConfig() {
     this->SERVO_3_ORIENTATION = doc["SERVO_3_ORIENTATION"]; // -1
     this->SERVO_4_ORIENTATION = doc["SERVO_4_ORIENTATION"]; // -1
 
-    this->MAX_FINS_TRAVEL = doc["MAX_FINS_TRAVEL"]; // 15
-    
-    this->PID_PITCH_Kp = doc["PID_PITCH_Kp"]; // 2
-    this->PID_PITCH_Ki = doc["PID_PITCH_Ki"]; // 0
-    this->PID_PITCH_Kd = doc["PID_PITCH_Kd"]; // 0.5
-    this->PID_ROLL_Kp = doc["PID_ROLL_Kp"]; // 2
-    this->PID_ROLL_Ki = doc["PID_ROLL_Ki"]; // 0
-    this->PID_ROLL_Kd = doc["PID_ROLL_Kd"]; // 0.5
-    
-    // this->X_GYRO_OFFSETS = doc["X_GYRO_OFFSETS"]; // 24
-    // this->Y_GYRO_OFFSETS = doc["Y_GYRO_OFFSETS"]; // 43
-    // this->Z_GYRO_OFFSETS = doc["Z_GYRO_OFFSETS"]; // 525
-    // this->X_ACCEL_OFFSETS = doc["X_ACCEL_OFFSETS"]; // -1109
-    // this->Y_ACCEL_OFFSETS = doc["Y_ACCEL_OFFSETS"]; // 841
-    // this->Z_ACCEL_OFFSETS = doc["Z_ACCEL_OFFSETS"]; // 525
+    // IMU CALIBRATION
+    // this->X_GYRO_OFFSETS = doc["X_GYRO_OFFSETS"]; 
+    // this->Y_GYRO_OFFSETS = doc["Y_GYRO_OFFSETS"]; 
+    // this->Z_GYRO_OFFSETS = doc["Z_GYRO_OFFSETS"]; 
+    // this->X_ACCEL_OFFSETS = doc["X_ACCEL_OFFSETS"];
+    // this->Y_ACCEL_OFFSETS = doc["Y_ACCEL_OFFSETS"];
+    // this->Z_ACCEL_OFFSETS = doc["Z_ACCEL_OFFSETS"];
      
     configFile.close();
 
@@ -200,9 +234,16 @@ int Configuration::saveConfig() {
     doc["EXCESSIVE_ANGLE_THRESHOLD"] = this->EXCESSIVE_ANGLE_THRESHOLD;
     doc["EXCESSIVE_ANGLE_TIME"] = this->EXCESSIVE_ANGLE_TIME;
 
-    doc["PITCH_AXIS"] = this->PITCH_AXIS;
-    doc["YAW_AXIS"] = this->YAW_AXIS;
-    doc["ROLL_AXIS"] = this->ROLL_AXIS;
+    // GUIDANCE CONTROL
+    doc["GUIDING_TYPE"] = this->GUIDING_TYPE;                               // Type of guiding system (1=TVC, 2=Fins)
+    doc["ROLL_CONTROL_ENABLED"] = this->ROLL_CONTROL_ENABLED  ;                      // 1=Enabled, 0=Disabled
+    doc["ROLL_CONTROL_TYPE"] = this->ROLL_CONTROL_TYPE;                         // If enabled, what type of roll control (1=Reaction wheel 2=Fins on the X-Axis)
+
+    // SERVO AXIS MAPPING  (POSSIBLE VALUES: X,Y,Z,A)   // A Stands for Other Possibly for reaction wheel
+    doc["SERVO_1_AXIS"] = this->SERVO_1_AXIS;                            // Two Servo can be on the same Axis
+    doc["SERVO_2_AXIS"] = this->SERVO_2_AXIS;
+    doc["SERVO_3_AXIS"] = this->SERVO_3_AXIS;
+    doc["SERVO_4_AXIS"] = this->SERVO_4_AXIS;
     
     doc["SERVO_1_OFFSET"] = this->SERVO_1_OFFSET;
     doc["SERVO_2_OFFSET"] = this->SERVO_2_OFFSET;
@@ -214,19 +255,79 @@ int Configuration::saveConfig() {
     doc["SERVO_4_ORIENTATION"] = this->SERVO_4_ORIENTATION;
     doc["MAX_FINS_TRAVEL"] = this->MAX_FINS_TRAVEL;
     
+    // PID TUNING
     doc["PID_PITCH_Kp"] = this->PID_PITCH_Kp;
     doc["PID_PITCH_Ki"] = this->PID_PITCH_Ki;
     doc["PID_PITCH_Kd"] = this->PID_PITCH_Kd;
+    doc["PID_YAW_Kp"] = this->PID_YAW_Kp;
+    doc["PID_YAW_Ki"] = this->PID_YAW_Ki;
+    doc["PID_YAW_Kd"] = this->PID_YAW_Kd;
     doc["PID_ROLL_Kp"] = this->PID_ROLL_Kp;
     doc["PID_ROLL_Ki"] = this->PID_ROLL_Ki;
     doc["PID_ROLL_Kd"] = this->PID_ROLL_Kd;
     
+    // IMU AXIS PHYSICAL LOCATION (ypr[3])
+    doc["PITCH_AXIS"] = this->PITCH_AXIS;
+    doc["YAW_AXIS"] = this->YAW_AXIS;
+    doc["ROLL_AXIS"] = this->ROLL_AXIS;
+
     doc["X_GYRO_OFFSETS"] = this->X_GYRO_OFFSETS;
     doc["Y_GYRO_OFFSETS"] = this->Y_GYRO_OFFSETS;
     doc["Z_GYRO_OFFSETS"] = this->Z_GYRO_OFFSETS;
     doc["X_ACCEL_OFFSETS"] = this->X_ACCEL_OFFSETS;
     doc["Y_ACCEL_OFFSETS"] = this->Y_ACCEL_OFFSETS;
     doc["Z_ACCEL_OFFSETS"] = this->Z_ACCEL_OFFSETS;
+
+    // // GUIDANCE CONTROL
+
+    // // SERVO AXIS MAPPING  (POSSIBLE VALUES: X,Y,Z,A)   // A Stands for Other Possibly for reaction wheel
+    // this.SERVO_1_AXIS doc["SERVO_1_AXIS"];                            // Two Servo can be on the same Axis
+    // this.SERVO_2_AXIS doc["SERVO_2_AXIS"];
+    // this.SERVO_3_AXIS doc["SERVO_3_AXIS"];
+    // this.SERVO_4_AXIS doc["SERVO_4_AXIS"];
+    
+    // this->SERVO_1_OFFSET doc["SERVO_1_OFFSET"];                              // Used to fine tune the SERVOs alingments
+    // this->SERVO_2_OFFSET doc["SERVO_2_OFFSET"];                             // Used to fine tune the SERVOs alingments
+    // this->SERVO_3_OFFSET doc["SERVO_3_OFFSET"];                              // Used to fine tune the SERVOs alingments
+    // this->SERVO_4_OFFSET doc["SERVO_4_OFFSET"];                             // Used to fine tune the SERVOs alingments
+    // this->SERVO_1_ORIENTATION doc["SERVO_1_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    // this->SERVO_2_ORIENTATION doc["SERVO_2_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    // this->SERVO_3_ORIENTATION doc["SERVO_3_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    // this->SERVO_4_ORIENTATION doc["SERVO_4_ORIENTATION"];                        // Used to reverse the servo rotation direction possible values (1, -1)
+    // this->MAX_FINS_TRAVEL doc["MAX_FINS_TRAVEL"];
+
+    // // PID TUNING
+    // this->PID_PITCH_Kp = doc["PID_PITCH_Kp"]; // 2
+    // this->PID_PITCH_Ki = doc["PID_PITCH_Ki"]; // 0
+    // this->PID_PITCH_Kd = doc["PID_PITCH_Kd"]; // 0.5
+    // this->PID_YAW_Kp = doc["PID_YAW_Kp"]; // 2
+    // this->PID_YAW_Ki = doc["PID_YAW_Ki"]; // 0
+    // this->PID_YAW_Kd = doc["PID_YAW_Kd"]; // 0.5
+    // this->PID_ROLL_Kp = doc["PID_ROLL_Kp"]; // 2
+    // this->PID_ROLL_Ki = doc["PID_ROLL_Ki"]; // 0
+    // this->PID_ROLL_Kd = doc["PID_ROLL_Kd"]; // 0.5
+    
+    // // IMU AXIS PHYSICAL LOCATION (ypr[3])
+    // this->PITCH_AXIS = doc["PITCH_AXIS"]; // 1
+    // this->YAW_AXIS = doc["YAW_AXIS"]; // 0
+    // this->ROLL_AXIS = doc["ROLL_AXIS"]; // 2
+    
+    // this->SERVO_1_OFFSET = doc["SERVO_1_OFFSET"]; // -11
+    // this->SERVO_2_OFFSET = doc["SERVO_2_OFFSET"]; // -2
+    // this->SERVO_3_OFFSET = doc["SERVO_3_OFFSET"]; // -11
+    // this->SERVO_4_OFFSET = doc["SERVO_4_OFFSET"]; // -2
+    // this->SERVO_1_ORIENTATION = doc["SERVO_1_ORIENTATION"]; // -1
+    // this->SERVO_2_ORIENTATION = doc["SERVO_2_ORIENTATION"]; // -1
+    // this->SERVO_3_ORIENTATION = doc["SERVO_3_ORIENTATION"]; // -1
+    // this->SERVO_4_ORIENTATION = doc["SERVO_4_ORIENTATION"]; // -1
+
+    // // IMU CALIBRATION
+    // this->X_GYRO_OFFSETS = doc["X_GYRO_OFFSETS"]; 
+    // this->Y_GYRO_OFFSETS = doc["Y_GYRO_OFFSETS"]; 
+    // this->Z_GYRO_OFFSETS = doc["Z_GYRO_OFFSETS"]; 
+    // this->X_ACCEL_OFFSETS = doc["X_ACCEL_OFFSETS"];
+    // this->Y_ACCEL_OFFSETS = doc["Y_ACCEL_OFFSETS"];
+    // this->Z_ACCEL_OFFSETS = doc["Z_ACCEL_OFFSETS"];
 
 
     if (!SPIFFS.begin()) {

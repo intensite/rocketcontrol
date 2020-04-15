@@ -78,6 +78,7 @@ void readBytes(uint32_t firstIndex, uint8_t *data, uint32_t size) {
 /// erase entire flash memory array
 /// may take several seconds depending on size, but is non blocking
 void chipErase() {
+    Serial.println("Erasing memory.........");
     flash.chipErase();
 }
 

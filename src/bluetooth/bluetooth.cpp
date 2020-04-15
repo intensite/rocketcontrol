@@ -37,12 +37,12 @@ BLECharacteristic pyroCharacteristic(
   BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
-// // Environment Caracteristic (R/O)
-// BLECharacteristic environmentCharacteristic(
-//   BLEUUID((uint16_t)0x1A04), 
-//   BLECharacteristic::PROPERTY_READ | 
-//   BLECharacteristic::PROPERTY_NOTIFY
-// );
+// // Guiding Caracteristic (R/O)
+BLECharacteristic guidingCharacteristic(
+  BLEUUID((uint16_t)0x1A04), 
+  BLECharacteristic::PROPERTY_READ | 
+  BLECharacteristic::PROPERTY_NOTIFY
+);
 
 /* Define the UUID for our Custom Service */
 #define serviceID BLEUUID((uint16_t)0x1700)
@@ -104,7 +104,7 @@ void setupBLE(CliCommand& cliPtr) {
 
    // Create and name the BLE Device
   BLEDevice::init("MORGAN flight computer");
-  BLEDevice::setMTU(100);
+  BLEDevice::setMTU(130);
 
   /* Create the BLE Server */
   BLEServer *MyServer = BLEDevice::createServer();
@@ -120,14 +120,14 @@ void setupBLE(CliCommand& cliPtr) {
   customService->addCharacteristic(&commandCharacteristic);  
   customService->addCharacteristic(&paramCharacteristic);  
   customService->addCharacteristic(&pyroCharacteristic);  
-  // customService->addCharacteristic(&environmentCharacteristic);  
+  customService->addCharacteristic(&guidingCharacteristic);  
 
   /* Add Descriptors to the Characteristic*/
-  commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  // commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   diagCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   paramCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   pyroCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
-  // environmentCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  guidingCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
 
   // Callback use to receive commands
   commandCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
@@ -155,9 +155,13 @@ void updateDiagnostics(float ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z
     float gyro[3];
     char str[80];
     
-    gyro[_CONF.YAW_AXIS] = (ypr[_CONF.YAW_AXIS] * 180/M_PI);
-    gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
-    gyro[_CONF.PITCH_AXIS] = (ypr[_CONF.PITCH_AXIS] * 180/M_PI);
+    // gyro[_CONF.YAW_AXIS] = (ypr[_CONF.YAW_AXIS] * 180/M_PI);
+    // gyro[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
+    // gyro[_CONF.PITCH_AXIS] = (ypr[_CONF.PITCH_AXIS] * 180/M_PI) -90;
+
+    gyro[_CONF.YAW_AXIS] = ypr[_CONF.YAW_AXIS];
+    gyro[_CONF.ROLL_AXIS] = ypr[_CONF.ROLL_AXIS];
+    gyro[_CONF.PITCH_AXIS] = ypr[_CONF.PITCH_AXIS];
 
     sprintf(str, "%.1f|%.1f|%.1f|%d|%d|%d|%.2f|%.2f|%.2f|%.2f|%.2f", 
               gyro[_CONF.YAW_AXIS], gyro[_CONF.PITCH_AXIS], gyro[_CONF.ROLL_AXIS], 
@@ -184,6 +188,8 @@ void updateBLEparams() {
   if (deviceConnected) {
     updatePrefs();
     updatePyros();
+
+    //updateGuiding();
   }
 }
 
@@ -208,6 +214,28 @@ void updatePyros() {
     /* Set the value */
     pyroCharacteristic.setValue(str);  // This is a value of a single byte
     pyroCharacteristic.notify();  // Notify the client of a change
+}
+void updateGuiding() {
+    char str[130];
+    
+     if (deviceConnected) {
+        sprintf(str, "%d|%d|%d|%c|%c|%c|%c|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f|%.2f", _CONF.GUIDING_TYPE, _CONF.ROLL_CONTROL_ENABLED, _CONF.ROLL_CONTROL_TYPE,
+                _CONF.SERVO_1_AXIS, _CONF.SERVO_2_AXIS, _CONF.SERVO_3_AXIS,_CONF.SERVO_4_AXIS,
+                _CONF.SERVO_1_OFFSET, _CONF.SERVO_2_OFFSET, _CONF.SERVO_3_OFFSET,_CONF.SERVO_4_OFFSET,
+                _CONF.SERVO_1_ORIENTATION, _CONF.SERVO_2_ORIENTATION, _CONF.SERVO_3_ORIENTATION,_CONF.SERVO_4_ORIENTATION,_CONF.MAX_FINS_TRAVEL,
+                _CONF.PID_PITCH_Kp, _CONF.PID_PITCH_Ki, _CONF.PID_PITCH_Kd,
+                _CONF.PID_YAW_Kp, _CONF.PID_YAW_Ki, _CONF.PID_YAW_Kd,
+                _CONF.PID_ROLL_Kp, _CONF.PID_ROLL_Ki, _CONF.PID_ROLL_Kd         
+                );
+
+
+        /* Set the value */
+        guidingCharacteristic.setValue(str);  // This is a value of a single byte
+        guidingCharacteristic.notify();  // Notify the client of a change
+
+        // Serial.println("Guiding Data: "); Serial.println(str);
+     }
+    
 }
 
 
