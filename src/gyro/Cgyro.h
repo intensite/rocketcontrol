@@ -11,9 +11,10 @@
      #include "Wire.h"
 #endif
 
-#define OUTPUT_READABLE_YAWPITCHROLL
+//#define OUTPUT_READABLE_YAWPITCHROLL
 // #define OUTPUT_READABLE_REALACCEL
-#define OUTPUT_READABLE_WORLDACCEL
+#define OUTPUT_READABLE_EULER
+//#define OUTPUT_READABLE_WORLDACCEL
 
 
 // ********************************************************
@@ -46,12 +47,13 @@ class Gyro {
         Quaternion q;           // [w, x, y, z]         quaternion container
         VectorInt16 aa;         // [x, y, z]            accel sensor measurements
         VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
+        VectorInt16 gyr;        // [x, y, z]            gyro sensor measurements
         VectorFloat gravity;    // [x, y, z]            gravity vector
-        float euler[3];         // [psi, theta, phi]    Euler angle container
 
     public:
         VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
         float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+        float euler[3];         // [psi, theta, phi]    Euler angle container
         float z_gforce;
 
         Gyro();
@@ -177,13 +179,46 @@ void Gyro::ProcessGyroData() {
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
             //z_gforce = gravity.z;
             
+            // Serial.print("Gyro data:\t");
+            // Serial.print(gyr.x);
+            // Serial.print("\t");
+            // Serial.print(gyr.y);
+            // Serial.print("\t");
+            // Serial.println(gyr.z);
+            
             // Serial.print("ypr\t");
             // Serial.print(ypr[0] * 180/M_PI);
             // Serial.print("\t");
             // Serial.print(ypr[1] * 180/M_PI);
             // Serial.print("\t");
             // Serial.println(ypr[2] * 180/M_PI);
+
+            // // Convert ypr from radiant to degree
+            ypr[_CONF.YAW_AXIS] = (ypr[_CONF.YAW_AXIS] * 180/M_PI);
+            ypr[_CONF.PITCH_AXIS] = (ypr[_CONF.PITCH_AXIS] * 180/M_PI);
+            ypr[_CONF.ROLL_AXIS] = (ypr[_CONF.ROLL_AXIS] * 180/M_PI);
             
+        #endif
+
+        #ifdef OUTPUT_READABLE_EULER
+            // display Euler angles in degrees
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetEuler(euler, &q);
+
+            if(_CONF.DEBUG) {
+                Serial.print("euler\t");
+                Serial.print(euler[0] * 180/M_PI);
+                Serial.print("\t");
+                Serial.print(euler[1] * 180/M_PI);
+                Serial.print("\t");
+                Serial.println((euler[2] * 180/M_PI) +90);  // Angle corrected for 90deg mount
+            }
+
+            // Convert ypr from radiant to degree 
+            // AND FEED THE Euler ANGLES IN THE YAW/PITCH/ROLL ARRAY FOR SIMPLICITY
+            ypr[_CONF.YAW_AXIS] = (euler[0] * 180/M_PI);
+            ypr[_CONF.PITCH_AXIS] = ((euler[2] * 180/M_PI) +90);
+            ypr[_CONF.ROLL_AXIS] = (euler[1] * 180/M_PI);
         #endif
 
         #ifdef OUTPUT_READABLE_REALACCEL

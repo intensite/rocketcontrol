@@ -6,9 +6,10 @@
 Servo servo_1; 
 Servo servo_2; 
 //Define Variables we'll be connecting to
-double Setpoint_Pitch, Input_Pitch, Output_Pitch, Setpoint_Roll, Input_Roll, Output_Roll;
+double Setpoint_Pitch, Input_Pitch, Output_Pitch, Setpoint_Roll, Input_Roll, Output_Roll, Input_Yaw, Output_Yaw, Setpoint_Yaw;
 
 PID pitchPID(&Input_Pitch, &Output_Pitch, &Setpoint_Pitch, _CONF.PID_PITCH_Kp, _CONF.PID_PITCH_Ki, _CONF.PID_PITCH_Kd, DIRECT);
+PID yawPID(&Input_Yaw, &Output_Yaw, &Setpoint_Yaw, _CONF.PID_YAW_Kp, _CONF.PID_YAW_Ki, _CONF.PID_YAW_Kd, DIRECT);
 PID rollPID(&Input_Roll, &Output_Roll, &Setpoint_Roll, _CONF.PID_ROLL_Kp, _CONF.PID_ROLL_Ki, _CONF.PID_ROLL_Kd, DIRECT);
 
 void setupServo() {
@@ -22,24 +23,28 @@ void setupServo() {
 
     //Specify the links and initial tuning parameters
     pitchPID.SetOutputLimits(_CONF.MAX_FINS_TRAVEL *-1, _CONF.MAX_FINS_TRAVEL);
-    rollPID.SetOutputLimits(_CONF.MAX_FINS_TRAVEL *-1, _CONF.MAX_FINS_TRAVEL);
+    yawPID.SetOutputLimits(_CONF.MAX_FINS_TRAVEL *-1, _CONF.MAX_FINS_TRAVEL);
     //turn the PID on
     pitchPID.SetMode(AUTOMATIC);
-    rollPID.SetMode(AUTOMATIC);
+    yawPID.SetMode(AUTOMATIC);
 }
 
 void testServo() {
     const int8_t test_amplitude = 30;
 
     // Test Servo #1
-    servo_1.write(90 + test_amplitude);   
-    servo_1.write(90 - test_amplitude);   
-    servo_1.write(90);   
+    // servo_1.write(90 + test_amplitude);   
+    // servo_1.write(90 - test_amplitude);   
+    // servo_1.write(90);   
 
-    // Test Servo #2
-    servo_2.write(90 + test_amplitude);   
-    servo_2.write(90 - test_amplitude);   
-    servo_2.write(85);   
+    // // Test Servo #2
+    // servo_2.write(90 + test_amplitude);   
+    // servo_2.write(90 - test_amplitude);   
+    // servo_2.write(85);   
+
+    servo_1.write(0);
+    servo_2.write(0);
+
 }
 
 // // OLD Direct Gyro-Servo connection
@@ -69,11 +74,67 @@ void testServo() {
 
 
 
-// NEW PID Controlled Gyro-Servo loop
+
 void moveServo(float _ypr[]) {
+
+    switch (_CONF.GUIDING_TYPE)
+    {
+        case GUIDING_TYPE_FINS:
+            moveServoFins(_ypr);
+            break;
+        case GUIDING_TYPE_TVC:
+            moveServoTVC(_ypr);
+            break;
+        default:
+            // GUIDING_TYPE DISABLED
+            break;
+    }
+}    
+
+
+// NEW PID Controlled Gyro-Servo loop
+void moveServoFins(float _ypr[]) {
 //ypr[0] * 180/M_PI
 
 
+    int16_t pos_1;
+    int16_t pos_2;
+
+    // if(_ypr[_CONF.PITCH_AXIS] == 0 || _ypr[_CONF.YAW_AXIS] ==0) {
+    //     // Data invalid do nothing
+    //     return;
+    // }
+
+    pos_1 =(int16_t) (_ypr[_CONF.PITCH_AXIS] );
+    pos_2 =(int16_t) (_ypr[_CONF.YAW_AXIS] );
+
+    Input_Pitch = pos_1;
+    Input_Yaw = pos_2;
+
+    pitchPID.Compute();
+    yawPID.Compute();
+
+    g_servo_yaw = (Output_Yaw * _CONF.SERVO_2_ORIENTATION + 90) + _CONF.SERVO_2_OFFSET ;
+    g_servo_pitch = (Output_Pitch * _CONF.SERVO_1_ORIENTATION + 90) + _CONF.SERVO_1_OFFSET ;
+
+    Serial.print(millis());Serial.print(",");
+    Serial.print(Input_Pitch);Serial.print(","); Serial.print(Input_Yaw);
+    Serial.print(","); Serial.print(Output_Pitch);
+    Serial.print(","); Serial.print(Output_Yaw);
+    Serial.print(","); Serial.print(g_servo_pitch);
+    Serial.print(","); Serial.print(g_servo_yaw);
+    Serial.println("");
+
+    servo_2.write(g_servo_yaw); 
+    servo_1.write(g_servo_pitch);  
+
+    
+    // Serial.print("g_servo_pitch : "); Serial.println(g_servo_pitch);
+    // Serial.print("g_servo_yaw : "); Serial.println(g_servo_yaw);
+    
+}
+
+void moveServoTVC(float _ypr[]) {
     int16_t pos_1;
     int16_t pos_2;
 
@@ -82,8 +143,8 @@ void moveServo(float _ypr[]) {
         return;
     }
 
-    pos_1 =(int16_t) (_ypr[_CONF.PITCH_AXIS] * 180/M_PI);
-    pos_2 =(int16_t) (_ypr[_CONF.YAW_AXIS] * 180/M_PI);
+    pos_1 =(int16_t) (_ypr[_CONF.PITCH_AXIS] );
+    pos_2 =(int16_t) (_ypr[_CONF.YAW_AXIS] );
 
     Input_Pitch = pos_1;
     Input_Roll = pos_2;
@@ -101,11 +162,17 @@ void moveServo(float _ypr[]) {
     // Serial.print("  O: ");
     // Serial.println(Output_Roll);
 
-    servo_2.write(Output_Roll + 90 + _CONF.SERVO_2_OFFSET); 
-    servo_1.write(Output_Pitch + 90 +  _CONF.SERVO_1_OFFSET);  
+    servo_2.write(((Output_Roll + 90) * _CONF.SERVO_2_ORIENTATION) + _CONF.SERVO_2_OFFSET ); 
+    servo_1.write(((Output_Pitch + 90) * _CONF.SERVO_1_ORIENTATION) +  _CONF.SERVO_1_OFFSET);  
 
     g_servo_pitch = (int16_t)Output_Pitch;
     g_servo_roll = (int16_t)Output_Roll;
+    // Serial.print("g_servo_pitch : "); Serial.println(g_servo_pitch);
+    // Serial.print("g_servo_roll : "); Serial.println(g_servo_roll);
+    
 }
 
-//@TODO: Make a PID control loop
+
+// void adjustServo(servoNumber, adjustment) {
+
+// }
