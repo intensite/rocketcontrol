@@ -8,13 +8,22 @@ void processTrajectory(float ypr[3]) {
     int8_t pos_1;
     int8_t pos_2;
 
-    if(ypr[_CONF.PITCH_AXIS] == 0 || ypr[_CONF.YAW_AXIS] ==0) {
-        // Data invalid do nothing
-        return;
-    }
+    // Serial.println("InsideprocessTrajectory");
+    // Serial.print("ypr[_CONF.PITCH_AXIS]: "); Serial.println(ypr[_CONF.PITCH_AXIS]);
+    // Serial.print("ypr[_CONF.YAW_AXIS]: "); Serial.println(ypr[_CONF.YAW_AXIS]);
+    // Serial.print("ypr[_CONF.ROLL_AXIS]: "); Serial.println(ypr[_CONF.ROLL_AXIS]);
+    
 
-    pos_1 =(int8_t) 90-(ypr[_CONF.PITCH_AXIS] * 180/M_PI);
-    pos_2 =(int8_t) 90-(ypr[_CONF.YAW_AXIS] * 180/M_PI);
+    // if(ypr[_CONF.PITCH_AXIS] == 0 || ypr[_CONF.YAW_AXIS] ==0) {
+    //     // Data invalid do nothing
+    //     return;
+    // }
+
+    // pos_1 =(int8_t) 90-(ypr[_CONF.PITCH_AXIS] * 180/M_PI);
+    // pos_2 =(int8_t) 90-(ypr[_CONF.YAW_AXIS] * 180/M_PI);
+    
+    pos_1 =(int8_t) 90-(ypr[_CONF.PITCH_AXIS] );
+    pos_2 =(int8_t) 90-(ypr[_CONF.YAW_AXIS] );
 
     if(_CONF.AUTOMATIC_ANGLE_ABORT) {
         //TODO: Compare angle to EXCESSIVE_ANGLE_THRESHOLD config constant to abort 
@@ -32,8 +41,11 @@ void processTrajectory(float ypr[3]) {
             Serial.println(ypr[_CONF.YAW_AXIS]);
             deployParachute();
             //is_abort = true;
-        } else {
-            moveServo(ypr);
+            return;
         }
     }
+
+    // Serial.println("Calling moveServo");
+    moveServo(ypr);
 }
+
