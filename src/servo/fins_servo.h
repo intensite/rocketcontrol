@@ -1,4 +1,4 @@
-
+#pragma once
 #include "Arduino.h"
 #include "../lib/Servo.h"
 #include "../config.h"

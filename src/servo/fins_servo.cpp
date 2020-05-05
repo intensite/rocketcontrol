@@ -13,9 +13,11 @@ PID yawPID(&Input_Yaw, &Output_Yaw, &Setpoint_Yaw, _CONF.PID_YAW_Kp, _CONF.PID_Y
 PID rollPID(&Input_Roll, &Output_Roll, &Setpoint_Roll, _CONF.PID_ROLL_Kp, _CONF.PID_ROLL_Ki, _CONF.PID_ROLL_Kd, DIRECT);
 
 void setupServo() {
+
     servo_1.attach(FINS_SERVO_1_PIN);  // attaches the servo pin
-    servo_1.write(90 + _CONF.SERVO_1_OFFSET);                  
     servo_2.attach(FINS_SERVO_2_PIN);  // attaches the servo on pin 9 to the servo object
+    
+    servo_1.write(90 + _CONF.SERVO_1_OFFSET);                  
     servo_2.write(90 + _CONF.SERVO_2_OFFSET);  
 
     Setpoint_Pitch = 0;
@@ -94,12 +96,10 @@ void moveServo(float _ypr[]) {
 
 // NEW PID Controlled Gyro-Servo loop
 void moveServoFins(float _ypr[]) {
-//ypr[0] * 180/M_PI
-
-
     int16_t pos_1;
     int16_t pos_2;
 
+    // Is this still necessary?
     // if(_ypr[_CONF.PITCH_AXIS] == 0 || _ypr[_CONF.YAW_AXIS] ==0) {
     //     // Data invalid do nothing
     //     return;
@@ -117,58 +117,56 @@ void moveServoFins(float _ypr[]) {
     g_servo_yaw = (Output_Yaw * _CONF.SERVO_2_ORIENTATION + 90) + _CONF.SERVO_2_OFFSET ;
     g_servo_pitch = (Output_Pitch * _CONF.SERVO_1_ORIENTATION + 90) + _CONF.SERVO_1_OFFSET ;
 
-    Serial.print(millis());Serial.print(",");
-    Serial.print(Input_Pitch);Serial.print(","); Serial.print(Input_Yaw);
-    Serial.print(","); Serial.print(Output_Pitch);
-    Serial.print(","); Serial.print(Output_Yaw);
-    Serial.print(","); Serial.print(g_servo_pitch);
-    Serial.print(","); Serial.print(g_servo_yaw);
-    Serial.println("");
+    if(_CONF.DEBUG) {
+        Serial.print(millis());Serial.print(",");
+        Serial.print(Input_Pitch);Serial.print(","); Serial.print(Input_Yaw);
+        Serial.print(","); Serial.print(Output_Pitch * _CONF.SERVO_1_ORIENTATION);  // Reversed for graphing purposes
+        Serial.print(","); Serial.print(Output_Yaw * _CONF.SERVO_2_ORIENTATION);    // Reversed for graphing purposes
+        Serial.print(","); Serial.print(g_servo_pitch);
+        Serial.print(","); Serial.print(g_servo_yaw);
+        Serial.println("");
+    }
 
+    // Send the commands to the Servos
     servo_2.write(g_servo_yaw); 
     servo_1.write(g_servo_pitch);  
-
-    
-    // Serial.print("g_servo_pitch : "); Serial.println(g_servo_pitch);
-    // Serial.print("g_servo_yaw : "); Serial.println(g_servo_yaw);
-    
 }
 
 void moveServoTVC(float _ypr[]) {
     int16_t pos_1;
     int16_t pos_2;
 
-    if(_ypr[_CONF.PITCH_AXIS] == 0 || _ypr[_CONF.YAW_AXIS] ==0) {
-        // Data invalid do nothing
-        return;
-    }
+    // Is this still necessary?
+    // if(_ypr[_CONF.PITCH_AXIS] == 0 || _ypr[_CONF.YAW_AXIS] ==0) {
+    //     // Data invalid do nothing
+    //     return;
+    // }
 
     pos_1 =(int16_t) (_ypr[_CONF.PITCH_AXIS] );
     pos_2 =(int16_t) (_ypr[_CONF.YAW_AXIS] );
 
     Input_Pitch = pos_1;
-    Input_Roll = pos_2;
+    Input_Yaw = pos_2;
 
     pitchPID.Compute();
-    rollPID.Compute();
+    yawPID.Compute();
 
-    // Serial.print("pitchPID I: ");
-    // Serial.print(Input_Pitch);
-    // Serial.print("  O: ");
-    // Serial.print(Output_Pitch);
+    g_servo_yaw = (Output_Yaw * _CONF.SERVO_2_ORIENTATION + 90) + _CONF.SERVO_2_OFFSET ;
+    g_servo_pitch = (Output_Pitch * _CONF.SERVO_1_ORIENTATION + 90) + _CONF.SERVO_1_OFFSET ;
 
-    // Serial.print("     ------  rollPID I: ");
-    // Serial.print(Input_Roll);
-    // Serial.print("  O: ");
-    // Serial.println(Output_Roll);
+    if(_CONF.DEBUG) {
+        Serial.print(millis());Serial.print(",");
+        Serial.print(Input_Pitch);Serial.print(","); Serial.print(Input_Yaw);
+        Serial.print(","); Serial.print(Output_Pitch * _CONF.SERVO_1_ORIENTATION);  // Reversed for graphing purposes
+        Serial.print(","); Serial.print(Output_Yaw * _CONF.SERVO_2_ORIENTATION);    // Reversed for graphing purposes
+        Serial.print(","); Serial.print(g_servo_pitch);
+        Serial.print(","); Serial.print(g_servo_yaw);
+        Serial.println("");
+    }
 
-    servo_2.write(((Output_Roll + 90) * _CONF.SERVO_2_ORIENTATION) + _CONF.SERVO_2_OFFSET ); 
-    servo_1.write(((Output_Pitch + 90) * _CONF.SERVO_1_ORIENTATION) +  _CONF.SERVO_1_OFFSET);  
-
-    g_servo_pitch = (int16_t)Output_Pitch;
-    g_servo_roll = (int16_t)Output_Roll;
-    // Serial.print("g_servo_pitch : "); Serial.println(g_servo_pitch);
-    // Serial.print("g_servo_roll : "); Serial.println(g_servo_roll);
+    // Send the commands to the Servos
+    servo_2.write(g_servo_yaw); 
+    servo_1.write(g_servo_pitch);
     
 }
 

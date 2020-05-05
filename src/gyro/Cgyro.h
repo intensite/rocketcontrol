@@ -11,9 +11,9 @@
      #include "Wire.h"
 #endif
 
-//#define OUTPUT_READABLE_YAWPITCHROLL
+#define OUTPUT_READABLE_YAWPITCHROLL
 // #define OUTPUT_READABLE_REALACCEL
-#define OUTPUT_READABLE_EULER
+//#define OUTPUT_READABLE_EULER
 //#define OUTPUT_READABLE_WORLDACCEL
 
 
@@ -113,8 +113,8 @@ uint8_t Gyro::setupGyro() {
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // Calibration Time: generate offsets and calibrate our MPU6050
-        //mpu.CalibrateAccel(6);    // Stephen Disabled for now (Seems to be affected when the board is started horizontally)
-        //mpu.CalibrateGyro(6);     // Stephen Disabled for now (Seems to be affected when the board is started horizontally)
+        mpu.CalibrateAccel(10);    // Stephen Disabled for now (Seems to be affected when the board is started horizontally)
+        mpu.CalibrateGyro(10);     // Stephen Disabled for now (Seems to be affected when the board is started horizontally)
         mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
         // Serial.println(F("Enabling DMP..."));
