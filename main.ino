@@ -10,6 +10,7 @@
 #include "src/storage/Storage.h"
 #include "src/storage/LogSystem.h"
 #include "src/configuration/configuration.h"
+#include "src/data/data.h"
 // #include "src/storage/LogSystem_SD.h"
 #include "src/parachute/parachute.h"
 #include <Wire.h>
@@ -61,11 +62,14 @@ Task tupdateBLEGuidanceConfig ( 550 * TASK_MILLISECOND, -1, &updateBLEGuidanceCo
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
 // ================================================================
+portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 #define MPU_INTERRUPT_PIN 35  // use pin 3 as pin 2 interfere with servo.
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void IRAM_ATTR dmpDataReady() {
+    portENTER_CRITICAL_ISR(&mux);       // Not sure if this mutex stuff brings anithing...
     mpuInterrupt = true;
+    portEXIT_CRITICAL_ISR(&mux);        // Not sure if this mutex stuff brings anithing...
 }
  
 
@@ -234,30 +238,19 @@ void setup() {
     pinMode(R_LED, OUTPUT);     digitalWrite(R_LED, HIGH);
     pinMode(G_LED, OUTPUT);     digitalWrite(G_LED, HIGH);
     pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
+
     pinMode(PIEZO_BUZZER, OUTPUT);
     pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
     led_color(LED_COLOR_BLUE);    // Set the LED to blue durring setup
     
+    
 
-// //************************************************************************************
-// // EMERGENCY MEMORY ERASE Mode
-// //************************************************************************************
-
-// Serial.println(F("EMERGENCY MEMORY ERASE Mode"));
-// Serial.println(F("Initialize the log system"));
-// lr::Storage::begin();
-// Serial.println(F("**** Erassing memory....This takes a while...."));
-// lr::LogSystem::format();
-// delay(5000); 
-// Serial.println(F("**** done Erassing memory. STARTING ENDLESS LOOP......."));
-// // Exit the loop 
-// noInterrupts();
-// while(1) {}
-// // abort();
-// //************************************************************************************
-
-
-
+    //************************************************************************************
+    // RESET MEMORY VARIABLES  (Now set from bluetooth)
+    //************************************************************************************
+    _CONF.FORMAT_MEMORY = 0;
+    _CONF.MEMORY_CARD_ENABLED = 0;
+    _CONF.DATA_RECOVERY_MODE = 0;
 
     pinMode(REMOVE_BEFORE_FLIGHT, INPUT_PULLUP); // HIGH IF READY TO FLY. Used with Jumper (Pin is configured as INPUT_PULLUP  ) 
     IS_READY_TO_FLY = digitalRead(REMOVE_BEFORE_FLIGHT); 
@@ -265,9 +258,10 @@ void setup() {
     Serial.print(F("IS_READY_TO_FLY: ")); Serial.println(IS_READY_TO_FLY);
     Serial.println(F("=============================================="));
 
-
+    // Attach the interrupt pin
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
+    
 
     ledStatus = LOW;
 
@@ -299,7 +293,7 @@ void setup() {
         }
     }
     //Storage system initialization
-    if (_CONF.MEMORY_CARD_ENABLED == 1) {
+    // if (_CONF.MEMORY_CARD_ENABLED == 1) {
         Serial.println(F("Initialize the log system"));
         Serial.print("_CONF.MEMORY_CARD_ENABLED : "); Serial.println(_CONF.MEMORY_CARD_ENABLED);
         
@@ -319,23 +313,23 @@ void setup() {
          * If in DATA_RECOVERY_MODE, the system will read the memory and output its content to the serial console.
          * The computer will end the program.
          **/
-        if (_CONF.DATA_RECOVERY_MODE == 1) {
-            Serial.println(F("Data recovery mode detected.  Reading memory...."));
-            dataModeSinceSetup = 1;
-            readData();
-            Serial.println(F("Data recovery completed...."));
-            return;
-        } else {
-            if(_CONF.FORMAT_MEMORY == 1){
-                Serial.println(F("**** Erassing memory....This takes a while...."));
-                lr::LogSystem::format();
-                delay(5000); 
-            } else {
-                // Mark the begining of a new flight in memory
-                lr::LogSystem::markBeginingOfDataSet();
-            }
-        }
-    }
+        // if (_CONF.DATA_RECOVERY_MODE == 1) {
+        //     Serial.println(F("Data recovery mode detected.  Reading memory...."));
+        //     dataModeSinceSetup = 1;
+        //     readData();
+        //     Serial.println(F("Data recovery completed...."));
+        //     return;
+        // } else {
+        //     if(_CONF.FORMAT_MEMORY == 1){
+        //         Serial.println(F("**** Erassing memory....This takes a while...."));
+        //         lr::LogSystem::format();
+        //         delay(5000); 
+        //     } else {
+        //         // Mark the begining of a new flight in memory
+        //         lr::LogSystem::markBeginingOfDataSet();
+        //     }
+        // }
+    // }
 
     testSequence();
 
@@ -380,7 +374,10 @@ void loop() {
 
     // Some data from the Gyroscope is ready to be processed
     if(mpuInterrupt) {
+        portENTER_CRITICAL(&mux);       
         mpuInterrupt = false;
+        portEXIT_CRITICAL(&mux);
+
         gyro.ProcessGyroData();
     }
    
@@ -398,7 +395,20 @@ void loop() {
            displaySensorData();  // Output sensors data to serial console.  Enabled only in DEBUG Mode to maximize computer performances.
     
         // Persist flight data to memory
-        persistData();
+        if (_CONF.DATA_RECOVERY_MODE) {
+            _CONF.DATA_RECOVERY_MODE = 0;
+            readDataToSerial();
+        }
+        if (_CONF.MEMORY_CARD_ENABLED) {
+            persistData();
+        }
+        if(_CONF.FORMAT_MEMORY){
+                _CONF.FORMAT_MEMORY = 0;
+                _CONF.MEMORY_CARD_ENABLED = 0;
+                Serial.println(F("**** Erassing memory....This takes a while...."));
+                lr::LogSystem::format();
+                delay(15000); 
+            }
 
         
         // updateDiagnostics(float& ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z, float& alti, float& temp, float& pressure, float& voltage)
@@ -414,13 +424,16 @@ void flashLEDcb() {
     // Flash Green LED every seconds
     if(ledStatus == LOW) {
         ledStatus = HIGH;
+        led_color(LED_COLOR_OFF);
     } else {
         ledStatus = LOW;
+        if(!_CONF.MEMORY_CARD_ENABLED) {  
+            // If the Memory card is not recording, flash blue
+            led_color(LED_COLOR_BLUE);
+        }else {
+            led_color(LED_COLOR_GREEN);
+        }
     }
-    digitalWrite(R_LED, HIGH); // High == OFF
-    digitalWrite(G_LED, ledStatus);
-    digitalWrite(B_LED, HIGH); 
-
 }
 
 void beepSequencecb() {

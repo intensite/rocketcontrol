@@ -14,5 +14,6 @@
 #define LED_COLOR_WHITE 7 
 
 void led_color(byte color_code);
+void led_color_rgb(int32_t color_code);
 
 #endif // LED_COLOR_FILE_H
