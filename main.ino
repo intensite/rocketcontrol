@@ -17,7 +17,6 @@
 #include "src/bluetooth/bluetooth.h"
 #include "src/command/command.h"
 #include "src/lib/TaskScheduler.h"
-// #include <BluetoothSerial.h>   // Very usefull to debug when battery powered.
 
 // Configuration& conf = _CONF; //Configuration::instance();
 
@@ -39,13 +38,12 @@ Gyro gyro;
 float voltage = 0;
 CliCommand cli;
 bool ledStatus;
-uint8_t dataModeSinceSetup = 0;
 // Scheduler
 Scheduler ts;
 
-// BluetoothSerial SerialBT;
-
+// ================================================================
 // Tasks definition
+// ================================================================
 void flashLEDcb();
 void beepSequencecb();
 void updateBLEdiags_cb();
@@ -115,8 +113,6 @@ void displaySensorData() {
         // voltage = (float)(voltage / 4096 * 40.125);
         // temp = (int8_t)(voltage * 10 + .5);
         // Serial.println((float)(temp/10));
-
-
 } 
 
 
@@ -196,7 +192,7 @@ int8_t persistData() {
         is_parachute_deployed, 
         is_abort, 
         altitude.temperature, // Temperature
-        72, // Batt (a faire)
+        voltage, // Batt (a faire)
         gyro.z_gforce  // gForces
     );
     if (!lr::LogSystem::appendRecord(logRecord)) {
@@ -208,22 +204,10 @@ int8_t persistData() {
     return 1;
 }
 
-void readData() {
-    uint32_t reccount = 0;
-    reccount = lr::LogSystem::currentNumberOfRecords();
-    Serial.print("Record Count : "); Serial.println(reccount);
-        
-    if (reccount > 0) {
-        for(uint32_t i = 0; i < reccount; i++) {
-            lr::LogRecord logRecord = lr::LogSystem::getLogRecord(i);
-            logRecord.writeToSerial();
-        }
-        Serial.print("Ouff I just read xx records : "); Serial.println(reccount);
-    } else {
-        Serial.println("Nothing to read");
-    }
-}
 
+// ================================================================
+// ===               MAIN SETUP ROUTINE                         ===
+// ================================================================
 void setup() {
 
     is_abort = false;
@@ -232,18 +216,18 @@ void setup() {
     g_servo_roll = 0;
 
     // initialize serial communication
-    Serial.begin(115200);  // Reduced the speed as it was crashing the arduino at 115200
-    delay(500);                // waits for the serial to settle
-    _CONF.readConfig();
+    Serial.begin(115200);       // Reduced the speed as it was crashing the arduino at 115200
+    delay(500);                 // waits for the serial to settle
+
+    _CONF.readConfig();         // Read the config from SPIFFS Memory
+    
     pinMode(R_LED, OUTPUT);     digitalWrite(R_LED, HIGH);
     pinMode(G_LED, OUTPUT);     digitalWrite(G_LED, HIGH);
     pinMode(B_LED, OUTPUT);     digitalWrite(B_LED, HIGH);
+    led_color(LED_COLOR_BLUE);    // Set the LED to blue durring setup
 
     pinMode(PIEZO_BUZZER, OUTPUT);
     pinMode(PARACHUTE_IGNITER_PIN, OUTPUT); digitalWrite(PARACHUTE_IGNITER_PIN, LOW);
-    led_color(LED_COLOR_BLUE);    // Set the LED to blue durring setup
-    
-    
 
     //************************************************************************************
     // RESET MEMORY VARIABLES  (Now set from bluetooth)
@@ -262,7 +246,6 @@ void setup() {
     pinMode(MPU_INTERRUPT_PIN, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(MPU_INTERRUPT_PIN), dmpDataReady, RISING);
     
-
     ledStatus = LOW;
 
     // Setup bluetooth
@@ -270,69 +253,44 @@ void setup() {
 
     setupServo();
     
-    // if (!DATA_RECOVERY_MODE) {
-    if (!_CONF.DATA_RECOVERY_MODE) {
-        dataModeSinceSetup = 0;  // Save that the DATA_RECOVERY_MODE was off on setup
-        if (gyro.setupGyro() != 0) {
-            setup_error = true;
-            // LED RED
-            led_color(LED_COLOR_RED);
-            is_abort = true;
-            Serial.println(F("Problem with Gyroscope not detected..."));
-            return;
-        }
-        //  SerialBT.println("Alright!! Gyroscope detected...");
-
-        if (altitude.setupAlti() !=0) {
-            setup_error = true;
-            // LED RED
-            led_color(LED_COLOR_RED);
-            is_abort = true;
-            Serial.println(F("Problem with altitmeter not detected..."));
-            return;
-        }
+    if (gyro.setupGyro() != 0) {
+        setup_error = true;
+        // LED RED
+        led_color(LED_COLOR_RED);
+        is_abort = true;
+        Serial.println(F("Problem with Gyroscope not detected..."));
+        return;
     }
-    //Storage system initialization
-    // if (_CONF.MEMORY_CARD_ENABLED == 1) {
-        Serial.println(F("Initialize the log system"));
-        Serial.print("_CONF.MEMORY_CARD_ENABLED : "); Serial.println(_CONF.MEMORY_CARD_ENABLED);
-        
-        delay(2000);
-        // FRAM LOG SYSTEM
-        if (!lr::Storage::begin()) {
-            Serial.println("Storage Problem");
-            is_abort = true;
-            return;
-        } else {
-            lr::LogSystem::begin(0);  
-            Serial.println("Storage seems OK");
-        }
-        // End of Storage system initialization
 
-        /**********************************************************************************************************
-         * If in DATA_RECOVERY_MODE, the system will read the memory and output its content to the serial console.
-         * The computer will end the program.
-         **/
-        // if (_CONF.DATA_RECOVERY_MODE == 1) {
-        //     Serial.println(F("Data recovery mode detected.  Reading memory...."));
-        //     dataModeSinceSetup = 1;
-        //     readData();
-        //     Serial.println(F("Data recovery completed...."));
-        //     return;
-        // } else {
-        //     if(_CONF.FORMAT_MEMORY == 1){
-        //         Serial.println(F("**** Erassing memory....This takes a while...."));
-        //         lr::LogSystem::format();
-        //         delay(5000); 
-        //     } else {
-        //         // Mark the begining of a new flight in memory
-        //         lr::LogSystem::markBeginingOfDataSet();
-        //     }
-        // }
-    // }
+    if (altitude.setupAlti() !=0) {
+        setup_error = true;
+        // LED RED
+        led_color(LED_COLOR_RED);
+        is_abort = true;
+        Serial.println(F("Problem with altitmeter not detected..."));
+        return;
+    }
+
+    // ================================================================
+    // ===               Storage system initialization              ===
+    // ================================================================
+    Serial.println(F("Initialize the log system"));
+    Serial.print("_CONF.MEMORY_CARD_ENABLED : "); Serial.println(_CONF.MEMORY_CARD_ENABLED);
+    
+    delay(2000);
+    // FRAM LOG SYSTEM
+    if (!lr::Storage::begin()) {
+        Serial.println("Storage Problem");
+        is_abort = true;
+        return;
+    } else {
+        lr::LogSystem::begin(0);  
+        Serial.println("Storage seems OK");
+    }
+    // End of Storage system initialization
+    // ================================================================    
 
     testSequence();
-
     
     // if(_CONF.DEBUG && IS_READY_TO_FLY) {
     //     debugParachute();  // WARNING TEST ONLY! REMOVE THIS LINE BEFORE FLIGHT.
@@ -350,22 +308,19 @@ void heartBeat() {
         return;
     }
 
-    // Execute the tasks
+    // Execute all the tasks according to their respective schedules 
     ts.execute();
 }
 
+
+
+// ================================================================
+// ===               Main loop                                  ===
+// ================================================================
 void loop() {
 
-    // In DATA_RECOVERY_MODE exit the main loop
-    if (_CONF.DATA_RECOVERY_MODE == 1 && dataModeSinceSetup == 1) {
-        // Exit the loop 
-        noInterrupts();
-        while(1) {}
-        // abort();
-    }
-
     unsigned long currentMillis = millis();
-    
+
     // The abort sequence was triggered (throw your arms in the air) exit the main loop
     // if (is_abort) {
     //     SerialBT.println("is_abort == true");
@@ -402,7 +357,7 @@ void loop() {
         if (_CONF.MEMORY_CARD_ENABLED) {
             persistData();
         }
-        if(_CONF.FORMAT_MEMORY){
+        if(_CONF.FORMAT_MEMORY) {
                 _CONF.FORMAT_MEMORY = 0;
                 _CONF.MEMORY_CARD_ENABLED = 0;
                 Serial.println(F("**** Erassing memory....This takes a while...."));
@@ -410,14 +365,16 @@ void loop() {
                 delay(15000); 
             }
 
-        
-        // updateDiagnostics(float& ypr[3], int16_t& ac_x, int16_t& ac_y, int16_t& ac_z, float& alti, float& temp, float& pressure, float& voltage)
         heartBeat();
 
         cli.handleSerial();
     }
    }
 
+
+/****************************************************************************************************************************
+ *                                      TASK CALLBACKs
+ ****************************************************************************************************************************/
 void flashLEDcb() {
 
     // Called by task tflashLED
@@ -430,7 +387,23 @@ void flashLEDcb() {
         if(!_CONF.MEMORY_CARD_ENABLED) {  
             // If the Memory card is not recording, flash blue
             led_color(LED_COLOR_BLUE);
+            delay(50);
+            led_color(LED_COLOR_OFF);
+            delay(100);
+            led_color(LED_COLOR_BLUE);
+            delay(50);
+            led_color(LED_COLOR_OFF);
+            delay(100);
+            led_color(LED_COLOR_BLUE);
         }else {
+            led_color(LED_COLOR_GREEN);
+            delay(50);
+            led_color(LED_COLOR_OFF);
+            delay(100);
+            led_color(LED_COLOR_GREEN);
+            delay(50);
+            led_color(LED_COLOR_OFF);
+            delay(100);
             led_color(LED_COLOR_GREEN);
         }
     }
