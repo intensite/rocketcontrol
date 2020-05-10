@@ -77,6 +77,8 @@ public:
     /// Example: 2015-08-22 12:42:21,80,25
     ///
     void writeToSerial() const;
+    // void writeToCSV() const;
+    void writeToCSV(char **rec, size_t *rec_len);
     
 public:     // Public for now.  Maybe getter and setters would be more appropriate
     unsigned long _timestamp;  // Milliseconds since start
@@ -139,6 +141,8 @@ bool markBeginingOfDataSet();
 /// It is enough to initialize the storage with minimum number of writes.
 ///
 void format();
+
+bool isBusy();
     
 
 }

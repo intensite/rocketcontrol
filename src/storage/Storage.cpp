@@ -82,6 +82,10 @@ void chipErase() {
     flash.chipErase();
 }
 
+bool isBusy() {
+    return flash.busy();
+}
+
 }
 }  // Name space crap 
 

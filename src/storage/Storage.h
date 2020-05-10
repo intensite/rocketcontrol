@@ -76,6 +76,8 @@ void writeBytes(uint32_t firstIndex, const uint8_t *data, uint32_t size);
 /// may take several seconds depending on size, but is non blocking
 void chipErase();
 
+bool isBusy();
+
 }
 }
 

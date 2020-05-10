@@ -20,6 +20,8 @@
 #include "LogSystem.h"
 #include "Storage.h"
 #include "../configuration/configuration.h"
+#include "../lib/PString.h"
+#include "../lib/Streaming.h"
 
 // #include <util/crc16.h>
 
@@ -90,6 +92,30 @@ void LogRecord::writeToSerial() const
     Serial.print(_battery);
     Serial.print(",");
     Serial.println(_gForces);
+}
+void LogRecord::writeToCSV(char** rec, size_t *rec_len) 
+{
+    /* This function knows the array will be of length RECORD_SIZE */
+    // char buffer[100];
+    char *buffer = (char*)malloc(100);
+
+    PString str(buffer, sizeof(buffer));
+
+    str << _timestamp << ",";
+    str << _altitude << ",";
+    str << _pitch << ",";
+    str << _roll << ",";
+    str << _pitchServo << ",";
+    str << _rollServo << ",";
+    str << _parachute << ",";
+    str << _abort << ",";
+    str << _temperature << ",";
+    str << _battery << ",";
+    str << _gForces << "\n";
+ 
+    *rec = buffer;
+    *rec_len = str.length();
+    Serial.print(buffer);
 }
 
 
@@ -335,6 +361,9 @@ void format()
 
 }
 
+bool isBusy() {
+    return Storage::isBusy();
+}
     
 uint32_t maximumNumberOfRecords()
 {
