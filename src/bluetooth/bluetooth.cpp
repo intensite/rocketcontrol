@@ -6,6 +6,9 @@
 #include "../configuration/configuration.h"
 #include "../command/command.h"
 #include "./bluetooth.h"
+#include "../lib/PString.h"
+#include "../lib/Streaming.h"
+
 //#include "helper_3dmath.h"
 
 /* Define the UUID for our Custom Service */
@@ -40,6 +43,12 @@ BLECharacteristic pyroCharacteristic(
 // // Guiding Caracteristic (R/O)
 BLECharacteristic guidingCharacteristic(
   BLEUUID((uint16_t)0x1A04), 
+  BLECharacteristic::PROPERTY_READ | 
+  BLECharacteristic::PROPERTY_NOTIFY
+);
+// // Flight Data Download Caracteristic (R/O)
+BLECharacteristic flightDataCharacteristic(
+  BLEUUID((uint16_t)0x1A05), 
   BLECharacteristic::PROPERTY_READ | 
   BLECharacteristic::PROPERTY_NOTIFY
 );
@@ -121,6 +130,7 @@ void setupBLE(CliCommand& cliPtr) {
   customService->addCharacteristic(&paramCharacteristic);  
   customService->addCharacteristic(&pyroCharacteristic);  
   customService->addCharacteristic(&guidingCharacteristic);  
+  customService->addCharacteristic(&flightDataCharacteristic);  
 
   /* Add Descriptors to the Characteristic*/
   // commandCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
@@ -128,6 +138,7 @@ void setupBLE(CliCommand& cliPtr) {
   paramCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   pyroCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
   guidingCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
+  flightDataCharacteristic.addDescriptor(new BLE2902());  //Add this line only if the characteristic has the Notify property
 
   // Callback use to receive commands
   commandCharacteristic.setCallbacks(new CharacteristicCallbacks(processCommand));
@@ -236,6 +247,34 @@ void updateGuiding() {
         // Serial.println("Guiding Data: "); Serial.println(str);
      }
     
+}
+
+void uploadFlightData(lr::LogRecord logRecord) {
+
+    /* This function knows the array will be of length RECORD_SIZE */
+    char buffer[100];
+    PString str(buffer, sizeof(buffer));
+
+    str << logRecord._timestamp << ",";
+    str << logRecord._altitude << ",";
+    str << logRecord._pitch << ",";
+    str << logRecord._roll << ",";
+    str << logRecord._pitchServo << ",";
+    str << logRecord._rollServo << ",";
+    str << logRecord._parachute << ",";
+    str << logRecord._abort << ",";
+    str << logRecord._temperature << ",";
+    str << logRecord._battery << ",";
+    str << logRecord._gForces << endl;
+
+  // Serial.print(buffer);
+
+     if (deviceConnected) {
+        /* Set the value */
+        flightDataCharacteristic.setValue(buffer);  // This is a value of a single byte
+        flightDataCharacteristic.notify();  // Notify the client of a change
+     }
+
 }
 
 

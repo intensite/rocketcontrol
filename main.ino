@@ -33,6 +33,7 @@ unsigned long previousMillis = 0;
 unsigned long previousHBeatMillis = 0;
 bool setup_error = false;
 
+
 Altitude altitude;
 Gyro gyro;
 float voltage = 0;
@@ -352,7 +353,8 @@ void loop() {
         // Persist flight data to memory
         if (_CONF.DATA_RECOVERY_MODE) {
             _CONF.DATA_RECOVERY_MODE = 0;
-            readDataToSerial();
+            // readDataToSerial();
+            readDataToBLE();
         }
         if (_CONF.MEMORY_CARD_ENABLED) {
             persistData();
@@ -362,9 +364,11 @@ void loop() {
                 _CONF.MEMORY_CARD_ENABLED = 0;
                 Serial.println(F("**** Erassing memory....This takes a while...."));
                 lr::LogSystem::format();
-                delay(15000); 
+                delay(20000); // 20 Sec. seems to do the job just fine
+                Serial.print("Is flash chip busy? : "); Serial.println(lr::LogSystem::isBusy());
             }
 
+        
         heartBeat();
 
         cli.handleSerial();
@@ -420,16 +424,23 @@ void beepSequencecb() {
 
 void updateBLEdiags_cb() {  // Updated on a fast schedule
     // Called by task updateBLEdiags_cb
-    updateDiagnostics(gyro.ypr, gyro.aaWorld.x, gyro.aaWorld.y, gyro.aaWorld.z, altitude.current_altitude, altitude.temperature, 
-            altitude.pressure, altitude.humidity, voltage);
+
+    if(!_CONF.DATA_RECOVERY_MODE) {
+        updateDiagnostics(gyro.ypr, gyro.aaWorld.x, gyro.aaWorld.y, gyro.aaWorld.z, altitude.current_altitude, altitude.temperature, 
+                altitude.pressure, altitude.humidity, voltage);
+    }
 }
 void updateBLEparams_cb() {  // Updated on a slower schedule
     // Called by task updateBLEparas_cb
-    updateBLEparams();
+    if(!_CONF.DATA_RECOVERY_MODE) {
+        updateBLEparams();
+    }
 }
 void updateBLEGuidanceConfig_cb() {  // Updated on a slower schedule
     // Called by task tupdateBLEGuidanceConfig
-    updateGuiding();
+    if(!_CONF.DATA_RECOVERY_MODE) {
+        updateGuiding();
+    }
 }
 
 void measureVoltage_cb() {
